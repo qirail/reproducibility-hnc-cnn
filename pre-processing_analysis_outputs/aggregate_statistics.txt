@@ -1,0 +1,36 @@
+================================================================================
+CMC DATASET HU ANALYSIS - SUMMARY REPORT
+================================================================================
+
+Dataset: 102 patients
+Average tumor volume: 4833 voxels
+
+TUMOR HU STATISTICS (Cohort Average):
+--------------------------------------------------------------------------------
+Mean:     91.35 HU
+Std:      30.09 HU
+Median:   99.00 HU
+Range:    [-1024.0, 2309.0] HU
+
+WINDOW PARAMETER PERFORMANCE:
+--------------------------------------------------------------------------------
+
+Best (-50 to 300 HU):
+  Coverage: 97.3% ± 4.2%
+  Minimum:  79.1%
+
+Wide (-500 to 500 HU):
+  Coverage: 99.4% ± 1.6%
+  Minimum:  91.1%
+
+Medium (-250 to 250 HU):
+  Coverage: 98.2% ± 3.3%
+  Minimum:  82.5%
+
+================================================================================
+RECOMMENDATION:
+================================================================================
+
+Best window (-50 to 300 HU) captures 97.3% of tumor pixels.
+
+Conclusion: Use -50 to 300 HU window (consistent with Pedro's methodology)

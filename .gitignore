@@ -1,0 +1,16 @@
+
+# Large data folders - excluded from repo
+anonymized_study/
+FOLLOW-UP_PATIENTS_FOR_2_YEARS_LRR__&__NON-LRR/
+convert_nifti_format/
+cmc_final_png/
+example/
+data/pre-processed/cmc_c/
+# Large data folders - excluded from repo
+anonymized_study/
+FOLLOW-UP_PATIENTS_FOR_2_YEARS_LRR__&__NON-LRR/
+convert_nifti_format/
+cmc_final_png/
+example/
+hnc_cnn_env
+data/pre-processed/cmc_c/
