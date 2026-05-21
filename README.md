@@ -24,7 +24,7 @@ Independent assessment of reproducibility and external validation of image-based
 ## Description
 
 This repository contains code and documentation for an **independent reproducibility assessment** of the study by Mateus et al. (2023):
-> *"Image based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization"* - Scientific Reports
+> *"Image-based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization"* - Scientific Reports
 
 We performed:
 1. **Exact reproduction** - Attempted to replicate original results using provided code, data, and methodology
@@ -78,8 +78,6 @@ We identified and corrected a critical bug in the original preprocessing pipelin
 # Pass 1: Identify tumor-containing slices
 # Pass 2: Select slice with largest tumor area among tumor-containing slices
 ```
-
-**Impact:** Improved success rate from 60% to 100% across all datasets.
 
 **Scripts:**
 - Step 1-2: `scripts/preprocessing/convert_dicom.py`
@@ -150,13 +148,13 @@ Three model types are available:
 ### Validation Strategies
 
 **Cohort Split Approach:**
-- Training: 2 Canadian centers (HGJ, CHUS)
-- Validation: 2 Canadian centers (HMR, CHUM)
-- External Test: Dutch dataset (MAASTRO)
+- Training: HN-PET-CT (2 Canadian centers)
+- Validation: HN-PET-CT (2 Canadian centers)
+- External Test: HN1-RADIOMICS (1 Dutch dataset, (MAASTRO))
 
 **5-Fold Cross-Validation:**
-- Stratified k-fold on full Canadian dataset
-- External Test: Dutch dataset (MAASTRO)
+- Stratified k-fold on the full HN-PET-CT (Canadian dataset)
+- External Test: HN1-RADIOMICS (Dutch dataset, (MAASTRO))
 
 ### Training Scripts
 
@@ -193,23 +191,23 @@ python scripts/training/training_os_cd.py    # imaging + clinical
 
 In this work, we followed the same data split as previous studies. In this strategy, two cohorts are used for training, two for validation, and one exclusively for external validation. To train the model following this method, configure the `DATA_SPLIT` parameter with `COHORT_SPLIT`.
 
-The cohort for training and validation are part of the [Head-Neck-PET-CT dataset](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00).
+The cohort for training and validation is part of the [Head-Neck-PET-CT dataset](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00).
 
 The dataset [HEAD-NECK-RADIOMICS-HN1](https://doi.org/10.7937/tcia.2019.8kap372n) from Maastro was used exclusively for external validation.
 
-Additionally, we evaluated the uncertainty of the model with a 5-fold cross validation strategy. To train the model following this method, configure the `DATA_SPLIT` parameter with `CROSS_VALIDATION`.
+Additionally, we evaluated the uncertainty of the model with a 5-fold cross-validation strategy. To train the model following this method, configure the `DATA_SPLIT` parameter with `CROSS_VALIDATION`.
 
 ### Training
 
-The current implementation allows to train and evaluate 3 different models:
+The current implementation allows training and evaluating 3 different models:
 - A convolutional neural network (set the `Model` parameter in the configuration to `CNN`)
 - An artificial neural network (set the `Model` parameter in the configuration to `ANN`)
 - A logistic regression (set the `Model` parameter in the configuration to `LR`)
 
-These models can be evaluated by splitting the data following the `COHORT_SPLIT` or cross validation (check previous section).
+These models can be evaluated by splitting the data following the `COHORT_SPLIT` or cross-validation (check the previous section).
 
 The additional parameters available are described below:
-- `FOLDS`: Number of folds to use when performing cross validation
+- `FOLDS`: Number of folds to use when performing cross-validation
 - `TIME_TO_EVENT`: The minimum observation period for a non-event to be included in the training
 - `EVENT`: Event that the network will predict (`DM` - Distant Metastasis, `LRF` - Local-Regional Failure, `OS` - Survival)
 - `HYPERPARAMETERS`: Set of hyperparameters to change from the default ones (check below)
@@ -229,10 +227,10 @@ Regarding the hyperparameters employed:
 - `CLASS_WEIGHTS`: weights for each class in the loss function (default: [0.7, 3.7])
 
 Regarding the data augmentation techniques:
-- `HORIZONTAL_FLIP`: by default a probability of 0.5
-- `VERTICAL_FLIP`: by default a probability of 0.5
-- `ROTATE_90`: randomly rotate the image 90 degrees 1-3 times, by default a probability of 0.75
-- `ROTATION`: randomly rotate the image a certain number of degrees, by default maximum 10 degrees
+- `HORIZONTAL_FLIP`: by default, a probability of 0.5
+- `VERTICAL_FLIP`: by default, a probability of 0.5
+- `ROTATE_90`: randomly rotate the image 90 degrees 1-3 times, by default, with a probability of 0.75
+- `ROTATION`: randomly rotate the image a certain number of degrees, by default, a maximum of 10 degrees
 
 To store the model, include the following parameters:
 - `MODEL_ID`: will be used for the file name in combination with the epoch number
