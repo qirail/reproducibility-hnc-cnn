@@ -335,7 +335,7 @@ out = x * mask * 1/(1-p)
 - External test set: [MAASTRO](https://doi.org/10.7937/tcia.2019.8kap372n) - Dutch HEAD-NECK-RADIOMICS-HN1 dataset
 
 **Conceptual Reproducibility (Our External Validation):**
-- External validation set: CMC Vellore, India (n=102) - Private dataset, access restricted
+- External validation set: CMC Vellore, India (n=102) - Private dataset, available on reasonable request but available as PNG format under `data/preprocessing/anonymized_cmc`
 
 ---
 
