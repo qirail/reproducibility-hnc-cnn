@@ -369,7 +369,6 @@ If you use this code or findings in your research, please cite:
 
 - **Original study authors** (Mateus et al.) for sharing code and providing clarifications during reproduction
 - **The Cancer Imaging Archive (TCIA)** for providing public datasets
-- **Christian Medical College Vellore** for computational resources and clinical data
 
 ---
 
