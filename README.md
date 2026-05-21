@@ -382,7 +382,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 - **Hasan Shaikh** - [GitHub](https://github.com/hash123shaikh)
 - **Dr. Hannah Mary Thomas T** - hannah.thomas@cmcvellore.ac.in
-- **Institution:** Quantitative Imaging Research and AI Lab, Christian Medical College, Vellore, India
+- **Institution:** Quantitative Imaging Research and Artificial Intelligence Lab (QIRAIL), Christian Medical College, Vellore, Tamil Nadu, India
 
 ---
 
