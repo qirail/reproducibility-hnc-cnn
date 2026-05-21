@@ -71,7 +71,7 @@ We identified and corrected a critical bug in the original preprocessing pipelin
 
 ### ⚠️ Critical Fix: Slice Selection Algorithm
 
-**Original bug:** Selected slice by total pixel count, often choosing non-tumor slices with artifacts.
+**Identified bug:** Selected slice by total pixel count, often choosing non-tumor slices with artifacts.
 
 **Our correction:** Two-pass tumor-focused algorithm
 ```python
