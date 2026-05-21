@@ -7,8 +7,6 @@ Independent assessment of reproducibility and external validation of image-based
 
 ## Table of Contents
 - [Description](#description)
-- [Study Design](#study-design)
-- [Key Findings](#key-findings)
 - [Requirements](#requirements)
 - [Data Pre-processing](#data-pre-processing)
 - [Running the Model](#running-the-model)
@@ -32,24 +30,6 @@ We performed:
 1. **Exact reproduction** - Attempted to replicate original results using provided code, data, and methodology
 2. **Conceptual reproduction** - External validation on a geographically distinct cohort (CMC Vellore, India, n=102)
 3. **Dual-framework compliance assessment** - Evaluated the original study against CLAIM and TRIPOD+AI reporting guidelines
-
----
-
-## Study Design
-
-![Study Design](dual-framework_compliance_assessment.png)
-
-**Figure 1.** Overview of the independent reproduction effort showing exact reproducibility (using original datasets and code), conceptual reproducibility (external validation on CMC cohort), and dual-framework compliance assessment (CLAIM and TRIPOD+AI).
-
----
-
-## Key Findings
-
-- ✅ **Exact reproduction achieved** - Results comparable to original (AUC differences: –0.22 to +0.10)
-- 🐛 **Preprocessing bug discovered** - Slice selection algorithm corrected, improving success rate from 60% to 100%
-- ⚠️ **7 barriers encountered** - Required 7 weeks to resolve through author communication and code modifications
-- 📊 **External validation** - Performance degradation observed on Indian cohort (AUC 0.54-0.59 vs original 0.71-0.79)
-- 📋 **Dual-framework assessment** - CLAIM: 86% vs 95% (self-reported); TRIPOD+AI: 77%
 
 ---
 
