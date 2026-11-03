@@ -1,4 +1,0 @@
-Imported 164 scans from data/pre-processed/canada_c with 44 events
-Imported 110 scans from data/pre-processed/canada_c with 23 events
-Imported 54 scans from data/pre-processed/canada_c with 21 events
-Imported 135 scans from data/pre-processed/maastro_c with 45 events

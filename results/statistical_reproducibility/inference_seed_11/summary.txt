@@ -1,2 +1,0 @@
-==========================================================================================
-RUN os_ann_cd | event d | time frame 1460 days | weights model_os_ANN_cd_308.pth.tar | clinical True | model CNN
