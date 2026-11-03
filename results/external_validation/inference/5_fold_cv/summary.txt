@@ -1,0 +1,87 @@
+==========================================================================================
+RUN dm_ann_fold0 | event dm | time frame 730 days | weights model_dm_ANN_cd_5-fold_cv_fold0_217.pth.tar | clinical True | model ANN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.908 (95% CI 0.853-0.954) loss=0.330
+  VALIDATION     n=  95 events= 10 AUC=0.882 (95% CI 0.762-0.966) loss=0.415
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.680 (95% CI 0.450-0.876) loss=2.272
+==========================================================================================
+RUN dm_ann_fold2 | event dm | time frame 730 days | weights model_dm_ANN_cd_5-fold_cv_fold2_2237.pth.tar | clinical True | model ANN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.899 (95% CI 0.842-0.945) loss=0.350
+  VALIDATION     n=  95 events= 10 AUC=0.931 (95% CI 0.850-0.989) loss=0.318
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.675 (95% CI 0.468-0.866) loss=6.721
+==========================================================================================
+RUN dm_ann_fold3 | event dm | time frame 730 days | weights model_dm_ANN_cd_5-fold_cv_fold3_4.pth.tar | clinical True | model ANN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.828 (95% CI 0.759-0.892) loss=0.629
+  VALIDATION     n=  95 events= 10 AUC=0.776 (95% CI 0.578-0.910) loss=0.672
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.729 (95% CI 0.525-0.912) loss=0.730
+==========================================================================================
+RUN dm_ann_fold4 | event dm | time frame 730 days | weights model_dm_ANN_cd_5-fold_cv_fold4_130.pth.tar | clinical True | model ANN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.901 (95% CI 0.842-0.947) loss=0.345
+  VALIDATION     n=  95 events= 10 AUC=0.874 (95% CI 0.775-0.950) loss=0.409
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.732 (95% CI 0.470-0.978) loss=1.989
+==========================================================================================
+RUN dm_img_fold0 | event dm | time frame 730 days | weights model_dm_5-fold_cv_fold0_207.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.795 (95% CI 0.685-0.891) loss=0.510
+  VALIDATION     n=  95 events= 10 AUC=0.906 (95% CI 0.777-0.981) loss=0.402
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.492 (95% CI 0.275-0.718) loss=0.953
+==========================================================================================
+RUN dm_img_fold1 | event dm | time frame 730 days | weights model_dm_5-fold_cv_fold1_264.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.857 (95% CI 0.776-0.928) loss=0.455
+  VALIDATION     n=  95 events= 10 AUC=0.924 (95% CI 0.813-0.998) loss=0.388
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.501 (95% CI 0.245-0.741) loss=0.836
+==========================================================================================
+RUN dm_img_fold2 | event dm | time frame 730 days | weights model_dm_5-fold_cv_fold2_190.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.772 (95% CI 0.648-0.868) loss=0.565
+  VALIDATION     n=  95 events= 10 AUC=0.882 (95% CI 0.747-0.987) loss=0.438
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.552 (95% CI 0.341-0.751) loss=0.783
+==========================================================================================
+RUN dm_img_fold4 | event dm | time frame 730 days | weights model_dm_5-fold_cv_fold4_511.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.922 (95% CI 0.859-0.972) loss=0.346
+  VALIDATION     n=  95 events= 10 AUC=0.947 (95% CI 0.874-0.990) loss=0.303
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.378 (95% CI 0.172-0.593) loss=1.143
+==========================================================================================
+RUN dm_cd_fold2 | event dm | time frame 730 days | weights model_dm_cd_5-fold_cv_fold2_24.pth.tar | clinical True | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.820 (95% CI 0.734-0.896) loss=0.493
+  VALIDATION     n=  95 events= 10 AUC=0.793 (95% CI 0.617-0.911) loss=0.569
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.761 (95% CI 0.528-0.969) loss=0.699
+==========================================================================================
+RUN dm_cd_fold3 | event dm | time frame 730 days | weights model_dm_cd_5-fold_cv_fold3_554.pth.tar | clinical True | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.949 (95% CI 0.911-0.980) loss=0.281
+  VALIDATION     n=  95 events= 10 AUC=0.929 (95% CI 0.806-0.996) loss=0.317
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.622 (95% CI 0.419-0.825) loss=1.235
+==========================================================================================
+RUN dm_cd_fold4 | event dm | time frame 730 days | weights model_dm_cd_5-fold_cv_fold4_8.pth.tar | clinical True | model CNN
+  TRAIN_METRICS  n= 183 events= 17 AUC=0.815 (95% CI 0.731-0.889) loss=0.532
+  VALIDATION     n=  95 events= 10 AUC=0.747 (95% CI 0.571-0.884) loss=0.602
+  CMC_EXTERNAL   n=  74 events=  9 AUC=0.749 (95% CI 0.508-0.944) loss=0.689
+==========================================================================================
+RUN lrf_ann_fold3 | event lrf | time frame 730 days | weights model_cmc_lrf_ANN_5-fold_cv_fold3_1008.pth.tar | clinical True | model ANN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.744 (95% CI 0.635-0.851) loss=0.590
+  VALIDATION     n=  97 events= 13 AUC=0.787 (95% CI 0.652-0.900) loss=0.610
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.509 (95% CI 0.392-0.629) loss=4.610
+==========================================================================================
+RUN lrf_img_fold0 | event lrf | time frame 730 days | weights model_cmc_lrf_5-fold_cv_fold0_264.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.674 (95% CI 0.547-0.800) loss=0.629
+  VALIDATION     n=  97 events= 13 AUC=0.788 (95% CI 0.628-0.911) loss=0.662
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.593 (95% CI 0.475-0.707) loss=1.373
+==========================================================================================
+RUN lrf_img_fold2 | event lrf | time frame 730 days | weights model_cmc_lrf_5-fold_cv_fold2_1382.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.763 (95% CI 0.673-0.851) loss=0.590
+  VALIDATION     n=  97 events= 13 AUC=0.857 (95% CI 0.746-0.949) loss=0.564
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.541 (95% CI 0.421-0.655) loss=1.158
+==========================================================================================
+RUN lrf_img_fold3 | event lrf | time frame 730 days | weights model_cmc_lrf_5-fold_cv_fold3_619.pth.tar | clinical False | model CNN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.751 (95% CI 0.622-0.861) loss=0.605
+  VALIDATION     n=  97 events= 13 AUC=0.887 (95% CI 0.814-0.957) loss=0.554
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.560 (95% CI 0.443-0.681) loss=1.789
+==========================================================================================
+RUN lrf_cd_fold0 | event lrf | time frame 730 days | weights model_cmc_lrf_cd_5-fold_cv_fold0_1149.pth.tar | clinical True | model CNN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.831 (95% CI 0.752-0.903) loss=0.464
+  VALIDATION     n=  97 events= 13 AUC=0.938 (95% CI 0.870-0.983) loss=0.412
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.597 (95% CI 0.474-0.704) loss=1.818
+==========================================================================================
+RUN lrf_cd_fold3 | event lrf | time frame 730 days | weights model_cmc_lrf_cd_5-fold_cv_fold3_852.pth.tar | clinical True | model CNN
+  TRAIN_METRICS  n= 179 events= 17 AUC=0.886 (95% CI 0.825-0.937) loss=0.411
+  VALIDATION     n=  97 events= 13 AUC=0.929 (95% CI 0.861-0.976) loss=0.399
+  CMC_EXTERNAL   n= 102 events= 42 AUC=0.527 (95% CI 0.402-0.634) loss=3.722
+==========================================================================================
+Done. Files are in results/external_validation_weights/5_fold_cv
