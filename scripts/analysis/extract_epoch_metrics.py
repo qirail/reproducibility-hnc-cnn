@@ -9,6 +9,11 @@ How the training code works (hn_cnn/fit.py):
     AUC improves AND is above THRESHOLD AND |train AUC - val AUC| < MAX_DIFFERENCE.
   => the saved file with the HIGHEST epoch number is the selected model.
 
+If NO checkpoint was saved (cohort split run, or none of the CV folds), the
+metrics of the LAST epoch recorded in the log are reported instead (normally
+epoch 2999; earlier if training stopped early because train AUC > 0.95).
+If only SOME CV folds saved a checkpoint, the unsaved folds are excluded.
+
 Usage (run from the repository root):
 
   # one log + an explicit epoch
@@ -45,6 +50,15 @@ def selected_epoch(models_dir, prefix):
     pat = re.compile(re.escape(prefix) + r"(\d+)\.pth\.tar$")
     epochs = [int(m.group(1)) for f in os.listdir(models_dir) if (m := pat.match(f))]
     return max(epochs) if epochs else None
+
+
+def last_epoch(log_path):
+    """Last epoch recorded in a log (2999 for a full 3000-epoch run)."""
+    with open(log_path) as fh:
+        epochs = [int(m.group(1)) for l in fh if (m := re.match(r"^Epoch (\d+)/\d+$", l.strip()))]
+    if not epochs:
+        sys.exit(f"No epochs found in {log_path}")
+    return epochs[-1]
 
 
 def metrics_at_epoch(log_path, epoch):
@@ -84,30 +98,40 @@ def main():
     a = ap.parse_args()
 
     if not a.cv:
-        epoch = a.epoch if a.epoch is not None else selected_epoch(a.models, a.prefix)
+        epoch, how = a.epoch, "given"
         if epoch is None:
-            sys.exit("No saved checkpoint found: this run did not select a model.")
+            epoch, how = selected_epoch(a.models, a.prefix), "highest saved checkpoint"
+        if epoch is None:
+            epoch, how = last_epoch(a.log), "NO checkpoint saved -> last epoch in log"
         m = metrics_at_epoch(a.log, epoch)
-        print(f"Selected epoch: {epoch}")
+        print(f"Epoch: {epoch}  ({how})")
         for s in SUBSETS:
             print(f"  {s:<14} ROC AUC {fmt(m.get(s))}")
         return
 
+    saved = {k: selected_epoch(a.models, f"{a.model_stem}_fold{k}_") for k in range(a.folds)}
+    none_saved = all(e is None for e in saved.values())
+    if none_saved:
+        print("No fold saved a checkpoint -> using the LAST epoch of every fold.\n")
+
     rows = []
     print(f"{'Fold':<5} {'Saved':<6} {'Epoch':<6} {'Train AUC':<10} {'Val AUC':<10} {'Test AUC':<10}")
     for k in range(a.folds):
-        epoch = selected_epoch(a.models, f"{a.model_stem}_fold{k}_")
-        if epoch is None:
-            print(f"{k:<5} {'No':<6} {'-':<6} {'excluded (no checkpoint saved)'}")
+        log = os.path.join(a.logs, f"{a.log_stem}_fold{k}.txt")
+        epoch = saved[k]
+        if epoch is None and not none_saved:
+            print(f"{k:<5} {'No':<6} {'-':<6} excluded (no checkpoint saved)")
             continue
-        m = metrics_at_epoch(os.path.join(a.logs, f"{a.log_stem}_fold{k}.txt"), epoch)
+        if epoch is None:
+            epoch = last_epoch(log)
+        m = metrics_at_epoch(log, epoch)
         r = [m[s][0] for s in SUBSETS]
         rows.append(r)
-        print(f"{k:<5} {'Yes':<6} {epoch:<6} {r[0]:<10.4f} {r[1]:<10.4f} {r[2]:<10.4f}")
-    if not rows:
-        sys.exit("No fold saved a checkpoint.")
+        flag = "Yes" if saved[k] is not None else "No"
+        print(f"{k:<5} {flag:<6} {epoch:<6} {r[0]:<10.4f} {r[1]:<10.4f} {r[2]:<10.4f}")
     arr = np.array(rows)
-    print(f"\nFolds with a saved model: {len(rows)}/{a.folds}")
+    label = "last epoch of each fold" if none_saved else "folds with a saved model"
+    print(f"\nFolds used ({label}): {len(rows)}/{a.folds}")
     for j, name in enumerate(["Train", "Validation", "Test"]):
         print(f"  {name:<11} mean {arr[:, j].mean():.4f}  range [{arr[:, j].min():.4f}, {arr[:, j].max():.4f}]")
 

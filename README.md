@@ -315,7 +315,7 @@ Training runs for a fixed number of epochs (3000 by default). **It does not save
 2. The validation AUC is **above `THRESHOLD`**.
 3. The gap |train AUC − validation AUC| is **below `MAX_DIFFERENCE`**.
 
-So the checkpoints in a `models/` folder form a sequence of improving models. **The file with the highest epoch number is the selected (final) model.** Its AUC values are not stored in the file name. You read them from the log file at that epoch.
+So the checkpoints in a `models/` folder form a sequence of improving models. **The file with the highest epoch number is the selected (final) model.** Its AUC values are not stored in the file name. You read them from the log file at that epoch. If no checkpoint was saved, use the last epoch in the log (see [When model weights are not saved](#when-model-weights-are-not-saved)).
 
 > **Tip:** use a fresh, empty `models/` folder for each run. Otherwise checkpoints from an earlier run can be mistaken for the selected model.
 
@@ -358,17 +358,22 @@ Each fold is a separate training run, with its own log `log_<id>_5-fold_cv_fold<
 2. Open that fold's log, find `Epoch <n>/3000`, and write down the train, validation and test **ROC AUC** as above.
 3. Compute the **mean AUC and the range [min, max]** over the folds. For CV we report the range, not a bootstrap CI.
 
-#### When one or more folds have no saved weights
+#### When model weights are not saved
 
-The save conditions are strict, so a fold may finish all 3000 epochs **without ever saving a checkpoint**. This means no epoch reached the validation-AUC threshold while keeping the train–validation gap small enough. In that case:
+The save conditions are strict, so a run or fold may finish **without ever saving a checkpoint**. This happens when no epoch reached the validation-AUC threshold while keeping the train–validation gap small enough. In that case, use the **last epoch recorded in the log**. This is normally `Epoch 2999/3000`, because epochs are numbered 0–2999. It can be earlier if training stopped early: the code stops a run once the training AUC goes above 0.95, and prints `Early stop: training AUC above 0.95`.
 
-- **The fold has no selected model, so it is excluded.** Do not take the last epoch's or the best epoch's values from the log for that fold, because that model did not pass the selection criteria.
-- **Compute the mean and range over the folds that did save a model**, and always report how many folds contributed, e.g. *"mean test AUC 0.80 [0.72–0.87], 3/5 folds"*.
-- All CV reports in this repository follow this rule. The `Number of folds` line in each `results/*/cv_reports/*.txt` file gives the number of contributing folds, and the fold-by-fold table lists which ones were used.
-- **If only a few folds (or none) saved a model, the estimate is less reliable.** Interpret it with caution and consider the range rather than the mean alone.
-- **For a cohort-split run with no saved checkpoint:** following the original methodology, relax the selection criteria and retrain. Gradually increase `MAX_DIFFERENCE` (starting at 0.05) and/or lower `THRESHOLD` until a model is saved. Report the values you used.
+| Situation | What to report |
+|---|---|
+| **Cohort split, no checkpoint saved** | The train, validation and test ROC AUCs (with 95% CI) at the **last epoch** in the log (normally 2999). |
+| **5-fold CV, no fold saved a checkpoint** | For **every fold**, take the values at that fold's **last epoch** (normally 2999). Report the **mean [min, max]** over all 5 folds. |
+| **5-fold CV, only some folds saved a checkpoint** | Use the selected (highest-epoch) checkpoint of each fold that saved one. **Exclude the folds without a checkpoint.** Report the **mean [min, max]** over the contributing folds and state how many were used, e.g. *"mean test AUC 0.80 [0.72–0.87], 3/5 folds"*. |
 
-Example (DM, imaging only, seed 11): folds 1 and 2 saved no weights.
+- The `Number of folds` line in each `results/*/cv_reports/*.txt` file gives the number of contributing folds, and the fold-by-fold table lists which folds and epochs were used.
+- **Last-epoch values come from a model that did not pass the selection criteria.** The same applies when only a few folds contributed. Interpret these estimates with caution, look at the range as well as the mean, and say in your report which rule was applied.
+
+`extract_epoch_metrics.py` applies these rules automatically.
+
+**Example 1: some folds saved** (DM, imaging only, seed 11; folds 1 and 2 saved no weights)
 
 ```bash
 python scripts/analysis/extract_epoch_metrics.py --cv \
@@ -384,13 +389,36 @@ Fold  Saved  Epoch  Train AUC  Val AUC    Test AUC
 3     Yes    286    0.8654     0.8800     0.8179
 4     Yes    419    0.9245     0.9520     0.7199
 
-Folds with a saved model: 3/5
+Folds used (folds with a saved model): 3/5
   Train       mean 0.8785  range [0.8457, 0.9245]
   Validation  mean 0.8943  range [0.8510, 0.9520]
   Test        mean 0.8035  range [0.7199, 0.8725]
 ```
 
-This matches `results/statistical_reproducibility/cv_reports/DM_Statistical_Repro_seed_11_Imaging_5-fold_CV_report.txt`.
+**Example 2: no fold saved** (the output format when every fold falls back to its last epoch)
+
+```
+No fold saved a checkpoint -> using the LAST epoch of every fold.
+
+Fold  Saved  Epoch  Train AUC  Val AUC    Test AUC
+0     No     2999   ...
+...
+4     No     2999   ...
+
+Folds used (last epoch of each fold): 5/5
+  Test        mean ...  range [..., ...]
+```
+
+**Example 3: cohort split, no checkpoint saved**
+
+```
+Epoch: 2999  (NO checkpoint saved -> last epoch in log)
+  TRAIN_METRICS  ROC AUC ...
+  VALIDATION     ROC AUC ...
+  TESTING        ROC AUC ...
+```
+
+Example 1 matches `results/statistical_reproducibility/cv_reports/DM_Statistical_Repro_seed_11_Imaging_5-fold_CV_report.txt`.
 
 ---
 
