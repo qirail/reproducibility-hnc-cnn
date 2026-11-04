@@ -168,14 +168,16 @@ Key pinned versions: `torch==1.13.1`, `torchvision==0.14.1`, `numpy==1.22.0`, `p
 |---|---|---|---|---|
 | **HN-PET-CT** (4 Canadian centres: HGJ, CHUS, HMR, CHUM) | [TCIA, doi:10.7937/K9/TCIA.2017.8oje5q00](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00) | 298 | Training / validation | `data/pre-processed/canada.csv`, `canada_c/` |
 | **HN1** (MAASTRO, Netherlands) | [TCIA, doi:10.7937/tcia.2019.8kap372n](https://doi.org/10.7937/tcia.2019.8kap372n) | 137 | External test (original study) | `data/pre-processed/maastro.csv`, `maastro_c/` |
-| **HNC-RADIOMICS** (CMC Vellore, India) | Private, prospectively recruited 2021–2025 | see CSV | External validation (this study) | `data/pre-processed/anonymized_cmc.csv`, `anonymized_cmc_png/` |
+| **HNC-RADIOMICS** (CMC Vellore, India) | Private, prospectively recruited 2021–2025 | 102 (of 307 recruited) | External validation (this study) | `data/pre-processed/anonymized_cmc.csv`, `anonymized_cmc_png/` |
 
 - **Images:** one 180×180, 8-bit PNG per patient, showing the CT slice with the largest GTV area after pre-processing.
 - **Clinical CSVs:** contain the features used by the models (T-stage, N-stage and tumour volume, one-hot encoded inside `hn_cnn/parse_data.py`) plus event indicators and times in days.
 - **Cohort split:** HGJ + CHUS for training and HMR + CHUM for validation. This is handled automatically from the patient IDs.
 - **Inclusion rule:** this follows the original code. Patients with an event inside the time frame are kept. Patients without an event are kept only if their follow-up is at least as long as the time frame.
 
-> **HNC-RADIOMICS** is shared only in de-identified, pre-processed form, with anonymised IDs `HN0001`, `HN0002`, … No raw DICOM data or direct identifiers are included.
+> **HNC-RADIOMICS:** 307 patients were recruited over the 5-year study period, and the **102 patients who completed 2 years of follow-up** are used for external validation and released here. When the 2-year inclusion rule is applied, the loader keeps 102 patients for LRF (42 events) and 74 for DM (9 events).
+>
+> The cohort is shared only in de-identified, pre-processed form, with anonymised IDs `HN0001`, `HN0002`, … No raw DICOM data or direct identifiers are included.
 
 ---
 
@@ -249,7 +251,7 @@ The six models released by Mateus et al. are stored in `results/models/original_
 
 ### 6.3 External validation (HNC-RADIOMICS)
 
-1. In the training script, point the **`TESTING`** entry to the external cohort:
+1. `training_dm.py` and `training_dm_cd.py` already use the external cohort as `TESTING`. For the other scripts, set:
    ```python
    TESTING: {
        CLINICAL_DATA_PATH: "data/pre-processed/anonymized_cmc.csv",

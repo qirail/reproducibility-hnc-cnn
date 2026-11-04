@@ -30,8 +30,8 @@ DATA = {
         SCANS_PATH: "data/pre-processed/canada_c",
     },
     TESTING: {
-        CLINICAL_DATA_PATH: "data/pre-processed/cmc.csv",
-        SCANS_PATH: "data/pre-processed/cmc_c",
+        CLINICAL_DATA_PATH: "data/pre-processed/anonymized_cmc.csv",
+        SCANS_PATH: "data/pre-processed/anonymized_cmc_png",
     }
 }
 
