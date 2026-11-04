@@ -1,0 +1,80 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite it as below."
+type: software
+title: "Independent reproduction and external validation of image-based deep learning prognostic models for head and neck cancer"
+abstract: >-
+  Code, data, model weights, logs and results for an independent exact and
+  statistical reproduction and external validation of the head and neck cancer
+  prognostic models of Mateus et al. (2023), including a CLAIM and TRIPOD+AI
+  reporting audit.
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/qirail/reproducibility-hnc-cnn"
+keywords:
+  - reproducibility
+  - deep learning
+  - head and neck cancer
+  - medical imaging
+  - CLAIM
+  - TRIPOD+AI
+authors:
+  - family-names: Shaikh
+    given-names: Hasan
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: A
+    given-names: Sathya
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: C
+    given-names: Praveenraj
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: S
+    given-names: Balu Krishna
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Irodi
+    given-names: Aparna
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Kuchipudi
+    given-names: Rajendra Benny
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Victor
+    given-names: Jino Wilson
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Mathew
+    given-names: Manu
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Isiah
+    given-names: Rajesh
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Pavamani
+    given-names: Simon Pradeep
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Mammen
+    given-names: Joy John
+    affiliation: "Christian Medical College Vellore, India"
+  - family-names: Thomas
+    given-names: Hannah Mary T
+    affiliation: "Christian Medical College Vellore, India"
+    email: hannah.thomas@cmcvellore.ac.in
+references:
+  - type: article
+    title: "Image based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization"
+    authors:
+      - family-names: Mateus
+        given-names: Pedro
+      - family-names: Volmer
+        given-names: Leroy
+      - family-names: Wee
+        given-names: Leonard
+      - family-names: Aerts
+        given-names: Hugo J. W. L.
+      - family-names: Hoebers
+        given-names: Frank
+      - family-names: Dekker
+        given-names: Andre
+      - family-names: Bermejo
+        given-names: Inigo
+    journal: "Scientific Reports"
+    volume: 13
+    start: 18176
+    year: 2023
+    doi: "10.1038/s41598-023-45486-5"
