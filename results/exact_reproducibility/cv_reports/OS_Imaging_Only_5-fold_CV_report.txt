@@ -1,0 +1,62 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          OS
+Data Type:        Imaging Only
+Approach:         5-fold CV
+Number of folds:  2
+Models saved:     2/2
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.7910
+  Std:   0.0206
+  Min:   0.7764
+  Max:   0.8056
+  Range: [0.7764, 0.8056]
+  Publication: 0.791 ± 0.021, range: [0.776, 0.806]
+
+Validation AUC
+  Mean:  0.7916
+  Std:   0.0065
+  Min:   0.7870
+  Max:   0.7962
+  Range: [0.7870, 0.7962]
+  Publication: 0.792 ± 0.007, range: [0.787, 0.796]
+
+Test AUC
+  Mean:  0.7101
+  Std:   0.0538
+  Min:   0.6720
+  Max:   0.7481
+  Range: [0.6720, 0.7481]
+  Publication: 0.710 ± 0.054, range: [0.672, 0.748]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      687      0.8056     0.7962     0.6720    
+1      Yes      923      0.7764     0.7870     0.7481    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

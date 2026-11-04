@@ -1,0 +1,62 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM_Statistical_Repro_seed_33
+Data Type:        Clinical_Imaging_Both
+Approach:         5-fold CV
+Number of folds:  2
+Models saved:     2/2
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8571
+  Std:   0.0693
+  Min:   0.8081
+  Max:   0.9061
+  Range: [0.8081, 0.9061]
+  Publication: 0.857 ± 0.069, range: [0.808, 0.906]
+
+Validation AUC
+  Mean:  0.8643
+  Std:   0.0108
+  Min:   0.8567
+  Max:   0.8720
+  Range: [0.8567, 0.8720]
+  Publication: 0.864 ± 0.011, range: [0.857, 0.872]
+
+Test AUC
+  Mean:  0.8754
+  Std:   0.0218
+  Min:   0.8599
+  Max:   0.8908
+  Range: [0.8599, 0.8908]
+  Publication: 0.875 ± 0.022, range: [0.860, 0.891]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+2      Yes      105      0.8081     0.8567     0.8599    
+3      Yes      550      0.9061     0.8720     0.8908    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

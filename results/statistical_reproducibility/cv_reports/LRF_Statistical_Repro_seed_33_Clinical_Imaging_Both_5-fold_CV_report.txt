@@ -1,0 +1,63 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          LRF_Statistical_Repro_seed_33
+Data Type:        Clinical_Imaging_Both
+Approach:         5-fold CV
+Number of folds:  3
+Models saved:     3/3
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.7721
+  Std:   0.1018
+  Min:   0.6582
+  Max:   0.8542
+  Range: [0.6582, 0.8542]
+  Publication: 0.772 ± 0.102, range: [0.658, 0.854]
+
+Validation AUC
+  Mean:  0.7644
+  Std:   0.0902
+  Min:   0.6633
+  Max:   0.8367
+  Range: [0.6633, 0.8367]
+  Publication: 0.764 ± 0.090, range: [0.663, 0.837]
+
+Test AUC
+  Mean:  0.5325
+  Std:   0.0561
+  Min:   0.4795
+  Max:   0.5912
+  Range: [0.4795, 0.5912]
+  Publication: 0.532 ± 0.056, range: [0.479, 0.591]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      801      0.8038     0.7933     0.4795    
+1      Yes      945      0.8542     0.8367     0.5912    
+4      Yes      89       0.6582     0.6633     0.5267    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

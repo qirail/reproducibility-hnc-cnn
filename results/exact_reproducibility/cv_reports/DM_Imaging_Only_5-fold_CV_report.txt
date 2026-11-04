@@ -1,0 +1,64 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM
+Data Type:        Imaging Only
+Approach:         5-fold CV
+Number of folds:  4
+Models saved:     4/4
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8750
+  Std:   0.0424
+  Min:   0.8320
+  Max:   0.9254
+  Range: [0.8320, 0.9254]
+  Publication: 0.875 ± 0.042, range: [0.832, 0.925]
+
+Validation AUC
+  Mean:  0.8646
+  Std:   0.0639
+  Min:   0.8067
+  Max:   0.9480
+  Range: [0.8067, 0.9480]
+  Publication: 0.865 ± 0.064, range: [0.807, 0.948]
+
+Test AUC
+  Mean:  0.7927
+  Std:   0.0457
+  Min:   0.7437
+  Max:   0.8543
+  Range: [0.7437, 0.8543]
+  Publication: 0.793 ± 0.046, range: [0.744, 0.854]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      207      0.8493     0.8235     0.7857    
+1      Yes      264      0.8934     0.8800     0.8543    
+2      Yes      190      0.8320     0.8067     0.7871    
+4      Yes      511      0.9254     0.9480     0.7437    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

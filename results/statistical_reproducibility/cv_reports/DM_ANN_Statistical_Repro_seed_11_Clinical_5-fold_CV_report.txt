@@ -1,0 +1,62 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM_ANN_Statistical_Repro_seed_11
+Data Type:        Clinical
+Approach:         5-fold CV
+Number of folds:  2
+Models saved:     2/2
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8953
+  Std:   0.0033
+  Min:   0.8930
+  Max:   0.8976
+  Range: [0.8930, 0.8976]
+  Publication: 0.895 ± 0.003, range: [0.893, 0.898]
+
+Validation AUC
+  Mean:  0.8770
+  Std:   0.0381
+  Min:   0.8500
+  Max:   0.9039
+  Range: [0.8500, 0.9039]
+  Publication: 0.877 ± 0.038, range: [0.850, 0.904]
+
+Test AUC
+  Mean:  0.8704
+  Std:   0.0030
+  Min:   0.8683
+  Max:   0.8725
+  Range: [0.8683, 0.8725]
+  Publication: 0.870 ± 0.003, range: [0.868, 0.873]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      163      0.8930     0.9039     0.8725    
+4      Yes      137      0.8976     0.8500     0.8683    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

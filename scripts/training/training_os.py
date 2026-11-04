@@ -1,8 +1,26 @@
 ################################## 📦 Importing Required Libraries ##################################
 
-import contextlib                # Provides utilities for working with context managers, used to redirect stdout
-import os                        # Provides a way of using operating system dependent functionality
-import random                    # Used to generate random numbers for seeding
+import contextlib                                                                               # Provides utilities for working with context managers, used to redirect stdout
+import os                                                                                       # Provides a way of using operating system dependent functionality
+import random                                                                                   # Used to generate random numbers for seeding
+import sys                                                                                      # Used to generate random numbers for seeding
+import subprocess                                                                               # Used to spawn new processes, connect to their input/output/error pipes, and obtain their return codes
+
+###################################### 📦 Parallel Processing Setup #######################
+
+SEEDS = [11, 22, 33]                      # seeds to run
+THREADS = "8"                             # CPU threads per run
+
+if "SEED" not in os.environ:              # first launch: start one process per seed
+    procs = []
+    for s in SEEDS:
+        env = {**os.environ, "SEED": str(s), "OMP_NUM_THREADS": THREADS}
+        out = open(f"seed_{s}.out", "w")
+        procs.append(subprocess.Popen([sys.executable] + sys.argv,
+                                      env=env, stdout=out, stderr=subprocess.STDOUT))
+    for p in procs:
+        p.wait()
+    sys.exit(0)
 
 import numpy as np                                                             # Numerical computations and array manipulations
 from sklearn.model_selection import KFold, StratifiedKFold                     # For data splitting strategies
@@ -39,23 +57,30 @@ DATA = {
 
 ################################## 🛠️ Configuration Settings ##################################
 
+SEED = int(os.environ["SEED"])                                            # was: int(sys.argv[1])
+OUT = f"results/statistical_reproducibility/seeds/seed_{SEED}"            # separate folder for each seed
+os.makedirs(f"{OUT}/logs", exist_ok=True)
+os.makedirs(f"{OUT}/models", exist_ok=True)
+
 CONFIGURATIONS = {
-    MODEL: CNN,  # Type of model to use (CNN, ANN, LR)
-    DATA_SPLIT: COHORT_SPLIT,  # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
-    FOLDS: 5,  # Number of folds for cross-validation (used only if CROSS_VALIDATION)
-    TIME_TO_EVENT: 4 * 365,  # Time period (in days) to consider if the event occurred (e.g., 2 years)
-    EVENT: OS,  # Type of event to predict: Distant Metastasis (DM), etc.
+    MODEL: ANN,                                                           # Type of model to use (CNN, ANN, LR)
+    DATA_SPLIT: COHORT_SPLIT,                                             # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
+    FOLDS: 5,                                                             # Number of folds for cross-validation (used only if CROSS_VALIDATION)
+    TIME_TO_EVENT: 4 * 365,                                               # Time period (in days) to consider if the event occurred (e.g., 2 years)
+    EVENT: OS,                                                            # Type of event to predict: Distant Metastasis (DM), etc.
     HYPERPARAMETERS: {
-        LEARNING_RATE: 0.05,  # Override default learning rate
+        LEARNING_RATE: 0.05,                                              # Override default learning rate
     },
-    BATCH_SIZE: 64,  # Number of samples per training batch
-    LOGS_PATH: "results/logs/log_os.txt",  # Directory to store log files
-    CLINICAL_VARIABLES: [],  # List of clinical variables to include (empty means none)
-    DATA_AUGMENTATION: {},  # Data augmentation parameters (empty means no augmentation)
+    BATCH_SIZE: 64,                                                        # Number of samples per training batch
+    # LOGS_PATH: "results/logs/log_os.txt",                                # Directory to store log files
+    LOGS_PATH: f"{OUT}/logs/log_os.txt",                                   
+    CLINICAL_VARIABLES: [],                                                # List of clinical variables to include (empty means none)
+    DATA_AUGMENTATION: {},                                                 # Data augmentation parameters (empty means no augmentation)
     # Optional model saving config (commented out)
     STORE_MODEL: {
          MODEL_ID: "os",
-         MODEL_PATH: 'results/models',
+         # MODEL_PATH: 'results/models',
+         MODEL_PATH: f"{OUT}/models",
          THRESHOLD: 0.75,
          MAX_DIFFERENCE: 0.05,
     }
@@ -65,12 +90,18 @@ CONFIGURATIONS = {
 ################################## 🔢 Random Seed Initialization ##################################
 
 # Set the seeds
+
+random.seed(SEED)
+random_seed_split = random.randint(0, int(1e6))
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
 # 1) Global python seed
-random.seed(5708730) # Set a fixed seed for reproducibility
+# random.seed(5708730) # Set a fixed seed for reproducibility
 # 2) Random split seed
-random_seed_split = random.randint(0, 5381955) # Random seed for splitting data into folds
+# random_seed_split = random.randint(0, 5381955) # Random seed for splitting data into folds
 # 3) Random seed torch
-torch.manual_seed(1737769) # Set seed for reproducibility in PyTorch
+# torch.manual_seed(1737769) # Set seed for reproducibility in PyTorch
 
 # Not necessary (doesn't make a difference when reproducing the results)
 # device = torch.device("cpu")
@@ -179,7 +210,7 @@ elif CONFIGURATIONS[DATA_SPLIT] == CROSS_VALIDATION:
             # Print current fold number to stdout (will be redirected to log file)
             print(f"Fold: {fold}")
             # Create a unique log file path for this fold
-            file_path = CONFIGURATIONS[LOGS_PATH].replace(".txt", f"_fold{fold}.txt")
+            file_path = CONFIGURATIONS[LOGS_PATH].replace(".txt", f"_5-fold_cv_fold{fold}.txt")
             
             # Open the log file in write mode
             with open(file_path, "w") as o:

@@ -1,0 +1,64 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM_Statistical_Repro_seed_22
+Data Type:        Imaging
+Approach:         5-fold CV
+Number of folds:  4
+Models saved:     4/4
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8702
+  Std:   0.0243
+  Min:   0.8440
+  Max:   0.9000
+  Range: [0.8440, 0.9000]
+  Publication: 0.870 ± 0.024, range: [0.844, 0.900]
+
+Validation AUC
+  Mean:  0.8833
+  Std:   0.0339
+  Min:   0.8400
+  Max:   0.9200
+  Range: [0.8400, 0.9200]
+  Publication: 0.883 ± 0.034, range: [0.840, 0.920]
+
+Test AUC
+  Mean:  0.7920
+  Std:   0.0571
+  Min:   0.7143
+  Max:   0.8375
+  Range: [0.7143, 0.8375]
+  Publication: 0.792 ± 0.057, range: [0.714, 0.838]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+1      Yes      317      0.8588     0.8767     0.8375    
+2      Yes      273      0.8780     0.8967     0.7143    
+3      Yes      231      0.8440     0.8400     0.8320    
+4      Yes      544      0.9000     0.9200     0.7843    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

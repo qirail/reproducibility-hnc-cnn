@@ -1,0 +1,63 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          LRF
+Data Type:        Imaging Only
+Approach:         5-fold CV
+Number of folds:  3
+Models saved:     3/3
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.7761
+  Std:   0.0545
+  Min:   0.7134
+  Max:   0.8121
+  Range: [0.7134, 0.8121]
+  Publication: 0.776 ± 0.054, range: [0.713, 0.812]
+
+Validation AUC
+  Mean:  0.7852
+  Std:   0.0442
+  Min:   0.7366
+  Max:   0.8231
+  Range: [0.7366, 0.8231]
+  Publication: 0.785 ± 0.044, range: [0.737, 0.823]
+
+Test AUC
+  Mean:  0.5645
+  Std:   0.0262
+  Min:   0.5412
+  Max:   0.5928
+  Range: [0.5412, 0.5928]
+  Publication: 0.564 ± 0.026, range: [0.541, 0.593]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      264      0.7134     0.7366     0.5928    
+2      Yes      1382     0.8028     0.8231     0.5412    
+3      Yes      619      0.8121     0.7959     0.5595    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

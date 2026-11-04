@@ -1,0 +1,65 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          LRF_ANN_Statistical_Repro_seed_11
+Data Type:        Clinical
+Approach:         5-fold CV
+Number of folds:  5
+Models saved:     5/5
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8122
+  Std:   0.0099
+  Min:   0.7981
+  Max:   0.8202
+  Range: [0.7981, 0.8202]
+  Publication: 0.812 ± 0.010, range: [0.798, 0.820]
+
+Validation AUC
+  Mean:  0.4268
+  Std:   0.0497
+  Min:   0.3605
+  Max:   0.4898
+  Range: [0.3605, 0.4898]
+  Publication: 0.427 ± 0.050, range: [0.360, 0.490]
+
+Test AUC
+  Mean:  0.4174
+  Std:   0.0927
+  Min:   0.3385
+  Max:   0.5747
+  Range: [0.3385, 0.5747]
+  Publication: 0.417 ± 0.093, range: [0.339, 0.575]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      3000     0.8202     0.4417     0.3844    
+1      Yes      3000     0.8179     0.4456     0.3385    
+2      Yes      3000     0.8055     0.3605     0.5747    
+3      Yes      3000     0.8192     0.3963     0.4200    
+4      Yes      3000     0.7981     0.4898     0.3694    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

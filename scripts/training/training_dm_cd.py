@@ -1,21 +1,20 @@
-################################## 📦 Importing Required Libraries ##################################
+################################## 📦 Importing Required Libraries & Parallel Processing Setup ##################################
 
-import contextlib  # Provides utilities for working with context managers, used to redirect stdout
-import os          # Provides a way of using operating system dependent functionality
-import random      # Used to generate random numbers for seeding
-
-import numpy as np  # Numerical computations and array manipulations
-from sklearn.model_selection import KFold, StratifiedKFold  # For data splitting strategies
-import torch  # PyTorch deep learning framework
-from torch.utils.data.dataloader import DataLoader  # Used to load data in batches
-# from torchsummary import summary  # (Commented) Used to print model summary similar to Keras
+import contextlib                                                                               # Provides utilities for working with context managers, used to redirect stdout
+import os                                                                                       # Provides a way of using operating system dependent functionality
+import random                                                                                   # Used to generate random numbers for seeding
+import numpy as np                                                                              # Numerical computations and array manipulations
+from sklearn.model_selection import KFold, StratifiedKFold                                      # For data splitting strategies
+import torch                                                                                    # PyTorch deep learning framework
+from torch.utils.data.dataloader import DataLoader                                              # Used to load data in batches
+# from torchsummary import summary                                                              # (Commented) Used to print model summary similar to Keras
 
 # Importing custom modules from hn_cnn package
-from hn_cnn.cnn import MODELS  # Dictionary of model architectures (CNN, ANN, LR)
-from hn_cnn.constants import *  # Constants like TRAIN, TESTING, DM, etc.
-from hn_cnn.data_augmentation import get_training_augmentation, TRANSFORM_TO_TENSOR  # Data transformations
-from hn_cnn.fit import fit  # Function that handles training of the model
-from hn_cnn.parse_data import ImageDataset  # Custom dataset class to parse image + clinical data
+from hn_cnn.cnn import MODELS                                                                   # Dictionary of model architectures (CNN, ANN, LR)
+from hn_cnn.constants import *                                                                  # Constants like TRAIN, TESTING, DM, etc.
+from hn_cnn.data_augmentation import get_training_augmentation, TRANSFORM_TO_TENSOR             # Data transformations
+from hn_cnn.fit import fit                                                                      # Function that handles training of the model
+from hn_cnn.parse_data import ImageDataset                                                      # Custom dataset class to parse image + clinical data
 
 
 ################################## 📁 Data and Paths ##################################
@@ -31,8 +30,8 @@ DATA = {
         SCANS_PATH: "data/pre-processed/canada_c",
     },
     TESTING: {
-        CLINICAL_DATA_PATH: "data/pre-processed/maastro.csv",
-        SCANS_PATH: "data/pre-processed/maastro_c",   
+        CLINICAL_DATA_PATH: "data/pre-processed/cmc.csv",
+        SCANS_PATH: "data/pre-processed/cmc_c",
     }
 }
 
@@ -40,22 +39,22 @@ DATA = {
 ################################## 🛠️ Configuration Settings ##################################
 
 CONFIGURATIONS = {
-    MODEL: ANN,  # Type of model to use (CNN, ANN, LR)
-    DATA_SPLIT: CROSS_VALIDATION,  # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
-    FOLDS: 5,  # Number of folds for cross-validation (used only if CROSS_VALIDATION)
-    TIME_TO_EVENT: 2 * 365,  # Time period (in days) to consider if the event occurred (e.g., 2 years)
-    EVENT: DM,  # Type of event to predict: Distant Metastasis (DM), etc.
+    MODEL: CNN,                                                           # Type of model to use (CNN, ANN, LR)
+    DATA_SPLIT: COHORT_SPLIT,                                             # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
+    FOLDS: 5,                                                             # Number of folds for cross-validation (used only if CROSS_VALIDATION)
+    TIME_TO_EVENT: 2 * 365,                                               # Time period (in days) to consider if the event occurred (e.g., 2 years)
+    EVENT: DM,                                                            # Type of event to predict: Distant Metastasis (DM), etc.
     HYPERPARAMETERS: {
-        LEARNING_RATE: 0.05,  # Override default learning rate
+        LEARNING_RATE: 0.05,                                              # Override default learning rate
     },
-    BATCH_SIZE: 64,  # Number of samples per training batch
-    LOGS_PATH: "results/logs/log_dm_cd_ANN.txt",  # Directory to store log files
-    CLINICAL_VARIABLES: True,  # List of clinical variables to include (empty means none)
-    DATA_AUGMENTATION: {},  # Data augmentation parameters (empty means no augmentation)
+    BATCH_SIZE: 64,                                                       # Number of samples per training batch
+    LOGS_PATH: "results/external_validation/logs/log_dm_cd.txt",      # Directory to store log files
+    CLINICAL_VARIABLES: True,                                             # List of clinical variables to include (empty means none)
+    DATA_AUGMENTATION: {},                                                # Data augmentation parameters (empty means no augmentation)
     # Optional model saving config (commented out)
     STORE_MODEL: {
-         MODEL_ID: "dm_cd_ANN",
-         MODEL_PATH: 'results/models',
+         MODEL_ID: "dm_cd",
+         MODEL_PATH: 'results/external_validation/models',
          THRESHOLD: 0.8,
          MAX_DIFFERENCE: 0.05,
     }
@@ -65,12 +64,13 @@ CONFIGURATIONS = {
 ################################## 🔢 Random Seed Initialization ##################################
     
 # Set the seeds
+
 # 1) Global python seed
-random.seed(5839709) # Set a fixed seed for reproducibility
+random.seed(9046379) # Set a fixed seed for reproducibility
 # 2) Random split seed
-random_seed_split = random.randint(0, 2411296) # Random seed for splitting data into folds
+random_seed_split = random.randint(0, 7651962) # Random seed for splitting data into folds
 # 3) Random seed torch
-torch.manual_seed(8555588) # Set seed for reproducibility in PyTorch
+torch.manual_seed(1250283) # Set seed for reproducibility in PyTorch
 
 # Not necessary (doesn't make a difference when reproducing the results)
 # device = torch.device("cpu")
@@ -240,5 +240,5 @@ elif CONFIGURATIONS[DATA_SPLIT] == CROSS_VALIDATION:
                         model,                            # Model to train
                         dataloaders,                      # Dictionary of all dataloaders (train/val/test)
                         parameters=CONFIGURATIONS[HYPERPARAMETERS],  # Hyperparameters such as learning rate
-                        store_model={**CONFIGURATIONS[STORE_MODEL], MODEL_ID: f"dm_ANN_5-fold_cv_fold{fold}"},  # Configuration for saving the trained model
+                        store_model={**CONFIGURATIONS[STORE_MODEL], MODEL_ID: f"dm_cd_5-fold_cv_fold{fold}"},  # Configuration for saving the trained model
                     )

@@ -1,0 +1,63 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          LRF_Statistical_Repro_seed_22
+Data Type:        Imaging
+Approach:         5-fold CV
+Number of folds:  3
+Models saved:     3/3
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.7857
+  Std:   0.0196
+  Min:   0.7631
+  Max:   0.7986
+  Range: [0.7631, 0.7986]
+  Publication: 0.786 ± 0.020, range: [0.763, 0.799]
+
+Validation AUC
+  Mean:  0.7744
+  Std:   0.0376
+  Min:   0.7347
+  Max:   0.8095
+  Range: [0.7347, 0.8095]
+  Publication: 0.774 ± 0.038, range: [0.735, 0.809]
+
+Test AUC
+  Mean:  0.5144
+  Std:   0.0336
+  Min:   0.4901
+  Max:   0.5527
+  Range: [0.4901, 0.5527]
+  Publication: 0.514 ± 0.034, range: [0.490, 0.553]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+1      Yes      693      0.7986     0.7789     0.5003    
+2      Yes      622      0.7953     0.8095     0.4901    
+4      Yes      1288     0.7631     0.7347     0.5527    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

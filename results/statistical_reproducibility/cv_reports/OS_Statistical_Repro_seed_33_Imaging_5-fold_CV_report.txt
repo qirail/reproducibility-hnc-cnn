@@ -1,0 +1,62 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          OS_Statistical_Repro_seed_33
+Data Type:        Imaging
+Approach:         5-fold CV
+Number of folds:  2
+Models saved:     2/2
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8817
+  Std:   0.0065
+  Min:   0.8771
+  Max:   0.8863
+  Range: [0.8771, 0.8863]
+  Publication: 0.882 ± 0.007, range: [0.877, 0.886]
+
+Validation AUC
+  Mean:  0.8936
+  Std:   0.0589
+  Min:   0.8519
+  Max:   0.9352
+  Range: [0.8519, 0.9352]
+  Publication: 0.894 ± 0.059, range: [0.852, 0.935]
+
+Test AUC
+  Mean:  0.6249
+  Std:   0.0593
+  Min:   0.5830
+  Max:   0.6668
+  Range: [0.5830, 0.6668]
+  Publication: 0.625 ± 0.059, range: [0.583, 0.667]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      485      0.8771     0.8519     0.5830    
+2      Yes      814      0.8863     0.9352     0.6668    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

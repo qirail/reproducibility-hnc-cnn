@@ -1,0 +1,64 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM
+Data Type:        Clinical
+Approach:         5-fold CV
+Number of folds:  4
+Models saved:     4/4
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.8797
+  Std:   0.0509
+  Min:   0.8046
+  Max:   0.9151
+  Range: [0.8046, 0.9151]
+  Publication: 0.880 ± 0.051, range: [0.805, 0.915]
+
+Validation AUC
+  Mean:  0.8803
+  Std:   0.0430
+  Min:   0.8180
+  Max:   0.9133
+  Range: [0.8180, 0.9133]
+  Publication: 0.880 ± 0.043, range: [0.818, 0.913]
+
+Test AUC
+  Mean:  0.8554
+  Std:   0.0475
+  Min:   0.7843
+  Max:   0.8837
+  Range: [0.7843, 0.8837]
+  Publication: 0.855 ± 0.047, range: [0.784, 0.884]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      217      0.9060     0.9039     0.8781    
+2      Yes      2237     0.9151     0.9133     0.8753    
+3      Yes      4        0.8046     0.8180     0.7843    
+4      Yes      130      0.8932     0.8860     0.8837    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

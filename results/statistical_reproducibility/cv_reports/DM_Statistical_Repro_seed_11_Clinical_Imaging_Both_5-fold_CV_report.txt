@@ -1,0 +1,63 @@
+================================================================================
+CROSS-VALIDATION RESULTS REPORT
+================================================================================
+
+Outcome:          DM_Statistical_Repro_seed_11
+Data Type:        Clinical_Imaging_Both
+Approach:         5-fold CV
+Number of folds:  3
+Models saved:     3/3
+Uncertainty:      Range [min, max]
+
+Reference:        Mateus et al. (2023) - DOI: 10.1038/s41598-023-45486-5
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Training AUC
+  Mean:  0.9084
+  Std:   0.0208
+  Min:   0.8900
+  Max:   0.9310
+  Range: [0.8900, 0.9310]
+  Publication: 0.908 ± 0.021, range: [0.890, 0.931]
+
+Validation AUC
+  Mean:  0.8810
+  Std:   0.0234
+  Min:   0.8670
+  Max:   0.9080
+  Range: [0.8670, 0.9080]
+  Publication: 0.881 ± 0.023, range: [0.867, 0.908]
+
+Test AUC
+  Mean:  0.8914
+  Std:   0.0186
+  Min:   0.8700
+  Max:   0.9033
+  Range: [0.8700, 0.9033]
+  Publication: 0.891 ± 0.019, range: [0.870, 0.903]
+
+
+================================================================================
+FOLD-BY-FOLD BREAKDOWN
+================================================================================
+
+Fold   Saved    Epoch    Train      Val        Test      
+----------------------------------------------------
+0      Yes      282      0.8900     0.8670     0.9033    
+3      Yes      436      0.9043     0.8680     0.8700    
+4      Yes      486      0.9310     0.9080     0.9010    
+
+================================================================================
+METHODOLOGY (From Paper)
+================================================================================
+
+For 5-fold cross-validation:
+- Uncertainty quantified using RANGE of values [min, max]
+- Stratified sampling to maintain outcome proportions
+- Model selection: highest validation AUC where train-val gap < threshold
+- Initial threshold: 0.05, gradually increased until model found
+
+================================================================================

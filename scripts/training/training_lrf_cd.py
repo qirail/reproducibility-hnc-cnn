@@ -1,8 +1,24 @@
-################################## 📦 Importing Required Libraries ##################################
+################################## 📦 Importing Required Libraries & Parallel Processing Setup ##################################
 
 import contextlib                                                                               # Provides utilities for working with context managers, used to redirect stdout
 import os                                                                                       # Provides a way of using operating system dependent functionality
 import random                                                                                   # Used to generate random numbers for seeding
+import sys                                                                                      # Used to generate random numbers for seeding
+import subprocess                                                                               # Used to spawn new processes, connect to their input/output/error pipes, and obtain their return codes
+
+SEEDS = [11, 22, 33]                      # seeds to run
+THREADS = "8"                             # CPU threads per run
+
+if "SEED" not in os.environ:              # first launch: start one process per seed
+    procs = []
+    for s in SEEDS:
+        env = {**os.environ, "SEED": str(s), "OMP_NUM_THREADS": THREADS}
+        out = open(f"seed_{s}.out", "w")
+        procs.append(subprocess.Popen([sys.executable] + sys.argv,
+                                      env=env, stdout=out, stderr=subprocess.STDOUT))
+    for p in procs:
+        p.wait()
+    sys.exit(0)
 
 import numpy as np                                                                              # Numerical computations and array manipulations
 from sklearn.model_selection import KFold, StratifiedKFold                                      # For data splitting strategies
@@ -31,17 +47,22 @@ DATA = {
         SCANS_PATH: "data/pre-processed/canada_c",
     },
     TESTING: {
-        CLINICAL_DATA_PATH: "data/pre-processed/cmc.csv",
-        SCANS_PATH: "data/pre-processed/cmc_c",
+        CLINICAL_DATA_PATH: "data/pre-processed/maastro.csv",
+        SCANS_PATH: "data/pre-processed/maastro_c",
     }
 }
 
 
 ################################## 🛠️ Configuration Settings ##################################
 
+SEED = int(os.environ["SEED"])                                            # was: int(sys.argv[1])
+OUT = f"results/statistical_reproducibility/seeds/seed_{SEED}"            # separate folder for each seed
+os.makedirs(f"{OUT}/logs", exist_ok=True)
+os.makedirs(f"{OUT}/models", exist_ok=True)
+
 CONFIGURATIONS = {
     MODEL: ANN,                                                 # Type of model to use (CNN, ANN, LR)
-    DATA_SPLIT: CROSS_VALIDATION,                               # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
+    DATA_SPLIT: COHORT_SPLIT,                                   # Splitting strategy: COHORT_SPLIT or CROSS_VALIDATION
     FOLDS: 5,                                                   # Number of folds for cross-validation (used only if CROSS_VALIDATION)
     TIME_TO_EVENT: 2 * 365,                                     # Time period (in days) to consider if the event occurred (e.g., 2 years)
     EVENT: LRF,                                                 # Type of event to predict: Distant Metastasis (DM), etc.
@@ -49,13 +70,15 @@ CONFIGURATIONS = {
         LEARNING_RATE: 0.05,                                    # Override default learning rate
     },
     BATCH_SIZE: 64,                                             # Number of samples per training batch
-    LOGS_PATH: "results/logs/cmc_log_lrf_cd_ANN.txt",           # Directory to store log files
+    # LOGS_PATH: "results/logs/cmc_log_lrf_cd.txt",              # Directory to store log files
+    LOGS_PATH: f"{OUT}/logs/log_lrf_cd_ANN.txt",
     CLINICAL_VARIABLES: True,                                   # List of clinical variables to include (empty means none)
     DATA_AUGMENTATION: {},                                      # Data augmentation parameters (empty means no augmentation)
     # Optional model saving config (commented out)
     STORE_MODEL: {
-         MODEL_ID: "lrf_cd_ANN",
-         MODEL_PATH: 'results/models',
+         MODEL_ID: "lrf_ANN_cd",
+         # MODEL_PATH: 'results/models',
+         MODEL_PATH: f"{OUT}/models",
          THRESHOLD: 0.65,
          MAX_DIFFERENCE: 0.15,
     }
@@ -65,12 +88,18 @@ CONFIGURATIONS = {
 ################################## 🔢 Random Seed Initialization ##################################
 
 # Set the seeds
+
+random.seed(SEED)
+random_seed_split = random.randint(0, int(1e6))
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
 # 1) Global python seed
-random.seed(7861083) # Set a fixed seed for reproducibility
+# random.seed(6003079) # Set a fixed seed for reproducibility
 # 2) Random split seed
-random_seed_split = random.randint(0, 3729975) # Random seed for splitting data into folds
+# random_seed_split = random.randint(0, int(1e6)) # Random seed for splitting data into folds
 # 3) Random seed torch
-torch.manual_seed(2690804) # Set seed for reproducibility in PyTorch
+# torch.manual_seed(8449678) # Set seed for reproducibility in PyTorch
 
 # Not necessary (doesn't make a difference when reproducing the results)
 # device = torch.device("cpu")
@@ -240,5 +269,5 @@ elif CONFIGURATIONS[DATA_SPLIT] == CROSS_VALIDATION:
                         model,                            # Model to train
                         dataloaders,                      # Dictionary of all dataloaders (train/val/test)
                         parameters=CONFIGURATIONS[HYPERPARAMETERS],  # Hyperparameters such as learning rate
-                        store_model={**CONFIGURATIONS[STORE_MODEL], MODEL_ID: f"cmc_lrf_ANN_5-fold_cv_fold{fold}"},  # Configuration for saving the trained model
+                        store_model={**CONFIGURATIONS[STORE_MODEL], MODEL_ID: f"lrf_ANN_cd_5-fold_cv_fold{fold}"},  # Configuration for saving the trained model
                     )
