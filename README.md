@@ -119,8 +119,8 @@ reproducibility-hnc-cnn/
 │   └── analysis/                  # mean AUC & CI over folds, parameter counts, 2-year analysis
 │
 ├── results/
-│   ├── models/original_paper_weights/   # weights released by Mateus et al. (+ with_clinical_data/)
-│   ├── exact_reproducibility/           # inference CSVs, ROC plots, CV reports
+│   ├── exact_reproducibility/           # original_paper_weights/ (released by Mateus et al.,
+│   │                                    # + with_clinical_data/), inference CSVs, ROC plots, CV reports
 │   ├── statistical_reproducibility/     # seeds/{original_author_seed,seed_11,seed_22,seed_33}/{logs,models}
 │   │                                    # inference, plots, CV reports
 │   └── external_validation/             # logs, models, inference, plots, CV reports (HNC-RADIOMICS)
@@ -209,7 +209,7 @@ To switch the validation strategy, set `DATA_SPLIT` to `COHORT_SPLIT` or `CROSS_
 
 ### 6.1 Exact reproducibility (released weights)
 
-The six models released by Mateus et al. are stored in `results/models/original_paper_weights/`:
+The six models released by Mateus et al. are stored in `results/exact_reproducibility/original_paper_weights/`:
 
 | Outcome | Imaging only | Imaging + clinical (`with_clinical_data/`) |
 |---|---|---|
@@ -220,7 +220,7 @@ The six models released by Mateus et al. are stored in `results/models/original_
 1. Open `scripts/inference/predict_original_weights.py` and edit the **Settings** block:
    ```python
    RESULTS_DIR = "results/exact_reproducibility/inference"
-   WEIGHTS_DIR = "results/models/original_paper_weights"     # use .../with_clinical_data for the *_cd models
+   WEIGHTS_DIR = "results/exact_reproducibility/original_paper_weights"     # use .../with_clinical_data for the *_cd models
    RUN_CANADA, RUN_HN1, RUN_CMC = True, True, False
    ```
 2. In `RUNS`, uncomment the entries under `Exact Reproducibility` and comment out the others.
