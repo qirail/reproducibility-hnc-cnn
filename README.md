@@ -25,6 +25,7 @@ The goal of this repository is that **anyone can repeat every step of our study*
    - [6.3 External validation (HNC-RADIOMICS)](#63-external-validation-hnc-radiomics)
    - [6.4 Pre-processing your own DICOM data](#64-pre-processing-your-own-dicom-data)
    - [6.5 Summaries, AUC/CI and plots](#65-summaries-aucci-and-plots)
+   - [6.6 Interpreting the results: from saved weights to AUC values](#66-interpreting-the-results-from-saved-weights-to-auc-values)
 7. [Configuration reference](#7-configuration-reference)
 8. [Models](#8-models)
 9. [Known reproducibility issues and fixes](#9-known-reproducibility-issues-and-fixes)
@@ -109,6 +110,7 @@ reproducibility-hnc-cnn/
 │   │   └── original_examples/     # unmodified training examples from the original repo
 │   ├── inference/predict_original_weights.py   # evaluate any saved weights
 │   ├── analysis/make_plots.py                  # ROC curves from prediction CSVs
+│   ├── analysis/extract_epoch_metrics.py       # selected epoch → train/val/test AUC from logs
 │   └── utils/fslinstaller.py                   # FSL installer
 │
 ├── notebooks/
@@ -304,6 +306,91 @@ FSL 6.0 must be installed (`scripts/utils/fslinstaller.py`) and `FSLDIR` must be
 | Event rates, median follow-up, ID checks | `data/pre-processed/*.ipynb` |
 
 For cohort-split models, 95% CIs are computed by bootstrap with 1000 resamples. For 5-fold CV, we report the mean AUC with its range across folds.
+
+### 6.6 Interpreting the results: from saved weights to AUC values
+
+Training runs for a fixed number of epochs (3000 by default). **It does not save a model at every epoch.** A checkpoint `model_<id>_<epoch>.pth.tar` is written only when **all three** of these conditions hold at that epoch (`hn_cnn/fit.py`):
+
+1. The validation AUC is **higher than at any earlier saved epoch**.
+2. The validation AUC is **above `THRESHOLD`**.
+3. The gap |train AUC − validation AUC| is **below `MAX_DIFFERENCE`**.
+
+So the checkpoints in a `models/` folder form a sequence of improving models. **The file with the highest epoch number is the selected (final) model.** Its AUC values are not stored in the file name. You read them from the log file at that epoch.
+
+> **Tip:** use a fresh, empty `models/` folder for each run. Otherwise checkpoints from an earlier run can be mistaken for the selected model.
+
+#### Cohort split (single train / validation / test)
+
+1. **Find the selected epoch.** Take the checkpoint with the highest epoch number in the models folder. For example, if `results/statistical_reproducibility/seeds/seed_11/models/` contains `model_dm_45 … model_dm_396, model_dm_512`, the selected epoch is **512**.
+2. **Open the matching log**, for example `.../seed_11/logs/log_dm.txt`, and search for the line `Epoch 512/3000`.
+3. Directly below it are three blocks: `TRAIN_METRICS`, `VALIDATION` and `TESTING`. In each block, write down the **ROC AUC**, which is the value in `'ROC': {'AUC': ...}`. **Don't use the `'PR'` AUC**, which appears later on the same line. The 95% CI is in `'CI': {... 'LOWER_BOUND': ..., 'HIGHER_BOUND': ...}`.
+   ```
+   Epoch 512/3000
+   TRAIN_METRICS
+   {'LOSS': ..., 'ROC': {'AUC': 0.8483, ..., 'CI': {..., 'LOWER_BOUND': 0.7287, 'HIGHER_BOUND': 0.9373}}, 'PR': {...}}
+   VALIDATION
+   {'LOSS': ..., 'ROC': {'AUC': 0.8741, ...}}
+   TESTING
+   {'LOSS': ..., 'ROC': {'AUC': 0.8515, ...}}
+   ```
+4. Report these as the **train, validation and test (HN1 or HNC-RADIOMICS) AUCs with their 95% CIs**, and compare them with the original values.
+
+The helper script does steps 1–3 for you:
+
+```bash
+python scripts/analysis/extract_epoch_metrics.py \
+    --log    results/statistical_reproducibility/seeds/seed_11/logs/log_dm.txt \
+    --models results/statistical_reproducibility/seeds/seed_11/models \
+    --prefix model_dm_
+# Selected epoch: 512
+#   TRAIN_METRICS  ROC AUC 0.8483 [0.7287-0.9373]
+#   VALIDATION     ROC AUC 0.8741 [0.7416-0.9689]
+#   TESTING        ROC AUC 0.8515 [0.6807-0.9725]
+```
+
+You can also pass the epoch directly with `--epoch 512`. To recompute the AUCs from the saved weights, run `scripts/inference/predict_original_weights.py` on that checkpoint (see [§6.1](#61-exact-reproducibility-released-weights)).
+
+#### 5-fold cross-validation
+
+Each fold is a separate training run, with its own log `log_<id>_5-fold_cv_fold<k>.txt` and its own checkpoints `model_<id>_5-fold_cv_fold<k>_<epoch>.pth.tar`.
+
+1. For **each fold k = 0…4**, take the checkpoint with the **highest epoch** for that fold.
+2. Open that fold's log, find `Epoch <n>/3000`, and write down the train, validation and test **ROC AUC** as above.
+3. Compute the **mean AUC and the range [min, max]** over the folds. For CV we report the range, not a bootstrap CI.
+
+#### When one or more folds have no saved weights
+
+The save conditions are strict, so a fold may finish all 3000 epochs **without ever saving a checkpoint**. This means no epoch reached the validation-AUC threshold while keeping the train–validation gap small enough. In that case:
+
+- **The fold has no selected model, so it is excluded.** Do not take the last epoch's or the best epoch's values from the log for that fold, because that model did not pass the selection criteria.
+- **Compute the mean and range over the folds that did save a model**, and always report how many folds contributed, e.g. *"mean test AUC 0.80 [0.72–0.87], 3/5 folds"*.
+- All CV reports in this repository follow this rule. The `Number of folds` line in each `results/*/cv_reports/*.txt` file gives the number of contributing folds, and the fold-by-fold table lists which ones were used.
+- **If only a few folds (or none) saved a model, the estimate is less reliable.** Interpret it with caution and consider the range rather than the mean alone.
+- **For a cohort-split run with no saved checkpoint:** following the original methodology, relax the selection criteria and retrain. Gradually increase `MAX_DIFFERENCE` (starting at 0.05) and/or lower `THRESHOLD` until a model is saved. Report the values you used.
+
+Example (DM, imaging only, seed 11): folds 1 and 2 saved no weights.
+
+```bash
+python scripts/analysis/extract_epoch_metrics.py --cv \
+    --logs   results/statistical_reproducibility/seeds/seed_11/logs \
+    --models results/statistical_reproducibility/seeds/seed_11/models \
+    --log-stem log_dm_5-fold_cv --model-stem model_dm_5-fold_cv
+```
+```
+Fold  Saved  Epoch  Train AUC  Val AUC    Test AUC
+0     Yes    370    0.8457     0.8510     0.8725
+1     No     -      excluded (no checkpoint saved)
+2     No     -      excluded (no checkpoint saved)
+3     Yes    286    0.8654     0.8800     0.8179
+4     Yes    419    0.9245     0.9520     0.7199
+
+Folds with a saved model: 3/5
+  Train       mean 0.8785  range [0.8457, 0.9245]
+  Validation  mean 0.8943  range [0.8510, 0.9520]
+  Test        mean 0.8035  range [0.7199, 0.8725]
+```
+
+This matches `results/statistical_reproducibility/cv_reports/DM_Statistical_Repro_seed_11_Imaging_5-fold_CV_report.txt`.
 
 ---
 
