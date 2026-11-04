@@ -1,389 +1,431 @@
-# Independent Reproducibility Assessment of CNN-based Head and Neck Cancer Prognostic Models
+# Independent reproduction and external validation of image-based deep learning prognostic models for head and neck cancer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch 1.13](https://img.shields.io/badge/pytorch-1.13.1-ee4c2c.svg)](https://pytorch.org/)
 
-Independent assessment of reproducibility and external validation of image-based prognosis in head and neck cancer using convolutional neural networks.
+This repository contains the code, data, trained models, logs and results needed to reproduce our **independent reproducibility study** of:
 
-## Table of Contents
-- [Description](#description)
-- [Requirements](#requirements)
-- [Data Pre-processing](#data-pre-processing)
-- [Running the Model](#running-the-model)
-  - [Data Configuration](#data-configuration)
-  - [Model Architectures](#model-architectures)
-  - [Validation Strategies](#validation-strategies)
-  - [Training Scripts](#training-scripts)
-  - [Data Split](#data-split)
-  - [Training](#training)
-  - [Clinical Data](#clinical-data)
-- [Citation](#citation)
+> Mateus P. *et al.* **Image based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization.** *Scientific Reports* 13, 18176 (2023). [doi:10.1038/s41598-023-45486-5](https://doi.org/10.1038/s41598-023-45486-5) · [original code](https://github.com/MaastrichtU-CDS/hn_cnn)
+
+The goal of this repository is that **anyone can repeat every step of our study**: re-running the released weights, retraining the models from scratch, running external validation, and checking our numbers against the logs and reports stored here.
 
 ---
 
-## Description
+## Table of contents
 
-This repository contains code and documentation for an **independent reproducibility assessment** of the study by Mateus et al. (2023):
-> *"Image-based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization"* - Scientific Reports
-
-We performed:
-1. **Exact reproduction** - Attempted to replicate original results using provided code, data, and methodology
-2. **Conceptual reproduction** - External validation on a geographically distinct cohort (CMC Vellore, India, n=102)
-3. **Dual-framework compliance assessment** - Evaluated the original study against CLAIM and TRIPOD+AI reporting guidelines
+1. [Study overview](#1-study-overview)
+2. [Key findings](#2-key-findings)
+3. [Repository structure](#3-repository-structure)
+4. [Installation](#4-installation)
+5. [Data](#5-data)
+6. [Reproducing the study, step by step](#6-reproducing-the-study-step-by-step)
+   - [6.1 Exact reproducibility (released weights)](#61-exact-reproducibility-released-weights)
+   - [6.2 Statistical reproducibility (retraining with random seeds)](#62-statistical-reproducibility-retraining-with-random-seeds)
+   - [6.3 External validation (HNC-RADIOMICS)](#63-external-validation-hnc-radiomics)
+   - [6.4 Pre-processing your own DICOM data](#64-pre-processing-your-own-dicom-data)
+   - [6.5 Summaries, AUC/CI and plots](#65-summaries-aucci-and-plots)
+7. [Configuration reference](#7-configuration-reference)
+8. [Models](#8-models)
+9. [Known reproducibility issues and fixes](#9-known-reproducibility-issues-and-fixes)
+10. [Reporting guideline assessment](#10-reporting-guideline-assessment)
+11. [Citation](#11-citation)
+12. [Acknowledgements, funding, license and contact](#12-acknowledgements-funding-license-and-contact)
 
 ---
 
-## Requirements
+## 1. Study overview
 
-### System Requirements
-- Ubuntu 24.04 LTS (or similar Linux distribution)
-- Python 3.10
-- NVIDIA GPU (recommended: Quadro RTX 5000 or equivalent with 16GB RAM)
-- FSL (FMRIB Software Library) version 6.0
+<p align="center">
+  <img src="figures/figure1_study_design.png" alt="Figure 1. Schema showing independent reproduction of work by Mateus et al. (2023)" width="900">
+</p>
+<p align="center"><b>Figure 1.</b> Schema showing independent reproduction of work by Mateus et al. (2023).</p>
 
-### Python Dependencies
+The original study trained models to predict three outcomes in head and neck cancer:
 
-Install using the provided requirements file:
+| Outcome | Abbreviation | Time frame |
+|---|---|---|
+| Loco-regional failure | LRF | 2 years |
+| Distant metastasis | DM | 2 years |
+| Overall survival | OS | 4 years |
 
-```bash
-pip install -r requirements.txt
+For each outcome, three model types were built: **ANN (clinical only)**, **CNN (imaging only)** and **CNN (imaging + clinical)**. Each was evaluated with two validation strategies: a **cohort split** and **5-fold stratified cross-validation**.
+
+Our independent reproduction effort has four parts:
+
+| Part | What we did |
+|---|---|
+| **Exact reproducibility** | Set up the original environment, debugged the code and evaluated the **released model weights** on the original data. |
+| **Statistical reproducibility** | Retrained all models **from scratch** with the original code, hyperparameters and data splits, using **4 random seeds** (the authors' seed plus seeds 11, 22 and 33). |
+| **External validation** | Ran the full pre-processing pipeline and model training for **LRF and DM** on a geographically distinct private cohort, **HNC-RADIOMICS** (Christian Medical College Vellore, India). |
+| **Reporting guidelines** | Audited the original study with **CLAIM** and assessed it with **TRIPOD+AI**. |
+
+---
+
+## 2. Key findings
+
+- **Exact reproducibility:** for the 6 models with released weights, the reproduced AUCs were within 0.01 of the original values, and within the original 95% CIs.
+- **Statistical reproducibility:** the mean test AUCs over 4 random seeds differed from the original AUCs by more than 0.03 in 6 of 18 models.
+- **External validation:** test AUCs for LRF were within the original 95% CI. For DM, the best model was the clinical-only ANN with an AUC of 0.74, against an original AUC of 0.86.
+- **Reporting:** Mateus et al. reported 95% CLAIM compliance. Our audit, done from a reproduction point of view, scored 86%.
+- **Effort:** resolving the barriers to reproduction took about **seven weeks** of elapsed time.
+
+The full tables are in the manuscript. The underlying numbers are in [`results/`](results/).
+
+---
+
+## 3. Repository structure
+
+```
+reproducibility-hnc-cnn/
+├── README.md
+├── LICENSE
+├── requirements.txt               # pinned dependencies (use this)
+├── requirements_env_complete.txt  # full `pip freeze` of the environment we used
+├── setup.py                       # installs the `hn_cnn` package
+│
+├── hn_cnn/                        # core library (from the original study)
+│   ├── cnn.py                     # ANN / CNN / LR architectures
+│   ├── fit.py                     # training loop, model selection, prediction
+│   ├── parse_data.py              # dataset loader + clinical-variable harmonisation
+│   ├── data_augmentation.py       # flips, 90° rotations, rotations, shifts
+│   ├── image_preprocessing.py     # pre-processing helpers
+│   ├── metrics.py, utils.py, constants.py
+│
+├── data/
+│   ├── pre-processed/             # ready-to-use model inputs
+│   │   ├── canada.csv + canada_c/                       # HN-PET-CT (n = 298), training / validation
+│   │   ├── maastro.csv + maastro_c/                     # HN1 (n = 137), external test
+│   │   ├── anonymized_cmc.csv + anonymized_cmc_png/     # HNC-RADIOMICS (de-identified), external validation
+│   │   └── *.ipynb                                      # event-rate / follow-up / ID checks
+│   ├── original_data/             # original clinical CSVs from the authors' repository
+│   ├── seeds.xlsx                 # random seeds used by the original authors
+│   └── README.md                  # data notes from the original repository
+│
+├── scripts/
+│   ├── preprocessing/             # DICOM → NIfTI → reorientation → slice selection → PNG
+│   ├── training/                  # training scripts per outcome (used in this study)
+│   │   ├── variants/              # earlier iterations kept for transparency
+│   │   └── original_examples/     # unmodified training examples from the original repo
+│   ├── inference/predict_original_weights.py   # evaluate any saved weights
+│   ├── analysis/make_plots.py                  # ROC curves from prediction CSVs
+│   └── utils/fslinstaller.py                   # FSL installer
+│
+├── notebooks/
+│   ├── data_preparation/          # RTSTRUCT checks, DICOM→NIfTI, anonymisation, volume/area
+│   ├── preprocessing/             # HU calibration, LRR timing, final PNG creation
+│   └── analysis/                  # mean AUC & CI over folds, parameter counts, 2-year analysis
+│
+├── results/
+│   ├── models/original_paper_weights/   # weights released by Mateus et al. (+ with_clinical_data/)
+│   ├── exact_reproducibility/           # inference CSVs, ROC plots, CV reports
+│   ├── statistical_reproducibility/     # seeds/{original_author_seed,seed_11,seed_22,seed_33}/{logs,models}
+│   │                                    # inference, plots, CV reports
+│   └── external_validation/             # logs, models, inference, plots, CV reports (HNC-RADIOMICS)
+│
+├── pre-processing_analysis_outputs/     # HU statistics and windowing / calibration figures
+├── figures/                             # Figure 1, cohort figures, compliance figure
+└── docs/                                # references and TRIPOD+AI checklists
 ```
 
-**Key packages:**
-- PyTorch 1.13.1
-- NumPy 1.22.0
-- Scikit-learn 1.5.0
-- Pillow 10.3.0
-- nibabel 3.2.1
-- dcmrtstruct2nii 1.0.19
-
 ---
 
-## Data Pre-processing
+## 4. Installation
 
-We identified and corrected a critical bug in the original preprocessing pipeline. Our corrected pipeline consists of:
+### 4.1 System requirements
 
-1. **DICOM to NIfTI conversion** - Convert CT scans and RT STRUCT using `dcmrtstruct2nii`
-2. **Reorientation and masking** - Apply GTV mask to NIfTI using FSL
-3. **Corrected slice selection** ⚠️ - Two-pass algorithm focusing on tumor-containing slices
-4. **HU windowing** - Apply windowing (-50 to 300 HU) and Gaussian smoothing (σ=0.5)
-5. **Cropping and normalization** - Crop to 180×180 pixels, normalize to 0-255
+| Component | Used in this study |
+|---|---|
+| OS | Ubuntu 24.04 LTS (any recent Linux should work) |
+| Python | 3.10 |
+| GPU | NVIDIA Quadro RTX 5000 (optional; CPU training also works but is slower) |
+| RAM | 16 GB minimum (peak ~7 GB during multimodal training) |
+| FSL | 6.0. Only needed to pre-process **new DICOM data** ([§6.4](#64-pre-processing-your-own-dicom-data)) |
 
-### ⚠️ Critical Fix: Slice Selection Algorithm
-
-**Identified bug:** Selected slice by total pixel count, often choosing non-tumor slices with artifacts.
-
-**Our correction:** Two-pass tumor-focused algorithm
-```python
-# Pass 1: Identify tumor-containing slices
-# Pass 2: Select slice with largest tumor area among tumor-containing slices
-```
-
-**Scripts:**
-- Step 1-2: `scripts/preprocessing/convert_dicom.py`
-- Step 3-5: `scripts/preprocessing/windowing_cropping.py` (corrected version)
-
----
-
-## Running the Model
-
-### Quick Start
+### 4.2 Set up the environment
 
 ```bash
-# Clone repository
-git clone https://github.com/hash123shaikh/reproducibility-hnc-cnn.git
+git clone https://github.com/qirail/reproducibility-hnc-cnn.git
 cd reproducibility-hnc-cnn
 
-# Install dependencies
+python3.10 -m venv hnc_cnn_env
+source hnc_cnn_env/bin/activate
+
+pip install --upgrade pip
 pip install -r requirements.txt
-
-# Download public datasets
-# Canadian: https://doi.org/10.7937/K9/TCIA.2017.8oje5q00
-# Dutch: https://doi.org/10.7937/TCIA.2019.8kap372n
-
-# Run preprocessing
-python scripts/preprocessing/windowing_cropping.py
-
-# Train model (example: Distant Metastasis with 5-fold CV)
-python scripts/training/training_dm.py
+pip install -e .            # makes `import hn_cnn` work from any script
 ```
 
-### Data Configuration
+Key pinned versions: `torch==1.13.1`, `torchvision==0.14.1`, `numpy==1.22.0`, `pandas==1.3.4`, `scikit-learn==1.5.0`, `Pillow==10.3.0`, `nibabel==3.2.1`, `dcmrtstruct2nii==1.0.19`.
+`requirements_env_complete.txt` contains the full list of packages in our environment, in case you need to match it exactly.
 
-Configure data paths in training scripts:
+> **Run every command from the repository root.** All paths in the scripts are relative to it, for example `data/pre-processed/...` and `results/...`.
 
+---
+
+## 5. Data
+
+| Cohort | Source | Patients | Role | Files in this repo |
+|---|---|---|---|---|
+| **HN-PET-CT** (4 Canadian centres: HGJ, CHUS, HMR, CHUM) | [TCIA, doi:10.7937/K9/TCIA.2017.8oje5q00](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00) | 298 | Training / validation | `data/pre-processed/canada.csv`, `canada_c/` |
+| **HN1** (MAASTRO, Netherlands) | [TCIA, doi:10.7937/tcia.2019.8kap372n](https://doi.org/10.7937/tcia.2019.8kap372n) | 137 | External test (original study) | `data/pre-processed/maastro.csv`, `maastro_c/` |
+| **HNC-RADIOMICS** (CMC Vellore, India) | Private, prospectively recruited 2021–2025, IRB no. 11689 | see CSV | External validation (this study) | `data/pre-processed/anonymized_cmc.csv`, `anonymized_cmc_png/` |
+
+- **Images:** one 180×180, 8-bit PNG per patient, showing the CT slice with the largest GTV area after pre-processing.
+- **Clinical CSVs:** contain the features used by the models (T-stage, N-stage and tumour volume, one-hot encoded inside `hn_cnn/parse_data.py`) plus event indicators and times in days.
+- **Cohort split:** HGJ + CHUS for training and HMR + CHUM for validation. This is handled automatically from the patient IDs.
+- **Inclusion rule:** this follows the original code. Patients with an event inside the time frame are kept. Patients without an event are kept only if their follow-up is at least as long as the time frame.
+
+> **HNC-RADIOMICS** is shared only in de-identified, pre-processed form, with anonymised IDs `HN0001`, `HN0002`, … No raw DICOM data or direct identifiers are included.
+
+---
+
+## 6. Reproducing the study, step by step
+
+All training scripts are configured by editing the **`DATA`** and **`CONFIGURATIONS`** blocks at the top of the file (see [§7](#7-configuration-reference)). They share the same structure:
+
+| Script | Outcome | Default model type |
+|---|---|---|
+| `scripts/training/training_dm.py` | DM, 2 years | CNN, imaging only |
+| `scripts/training/training_dm_cd.py` | DM, 2 years | CNN, imaging + clinical (`CLINICAL_VARIABLES: True`) |
+| `scripts/training/training_lrf.py` | LRF, 2 years | imaging only |
+| `scripts/training/training_lrf_cd.py` | LRF, 2 years | clinical (`CLINICAL_VARIABLES: True`) |
+| `scripts/training/training_os.py` | OS, 4 years | imaging only |
+| `scripts/training/training_os_cd.py` | OS, 4 years | clinical (`CLINICAL_VARIABLES: True`) |
+
+To switch between the three model types, set:
+
+| Model type | `MODEL` | `CLINICAL_VARIABLES` |
+|---|---|---|
+| ANN (clinical only) | `ANN` | `True` |
+| CNN (imaging only) | `CNN` | `[]` |
+| CNN (imaging + clinical) | `CNN` | `True` |
+
+To switch the validation strategy, set `DATA_SPLIT` to `COHORT_SPLIT` or `CROSS_VALIDATION` (with `FOLDS: 5`).
+
+### 6.1 Exact reproducibility (released weights)
+
+The six models released by Mateus et al. are stored in `results/models/original_paper_weights/`:
+
+| Outcome | Imaging only | Imaging + clinical (`with_clinical_data/`) |
+|---|---|---|
+| DM | `model_dm_689.pth.tar` | `model_dm_cd_646.pth.tar` |
+| LRF | `model_lrf_2340.pth.tar` | `model_lrf_cd_964.pth.tar` |
+| OS | `model_os_1341.pth.tar` | `model_os_cd_2445.pth.tar` |
+
+1. Open `scripts/inference/predict_original_weights.py` and edit the **Settings** block:
+   ```python
+   RESULTS_DIR = "results/exact_reproducibility/inference"
+   WEIGHTS_DIR = "results/models/original_paper_weights"     # use .../with_clinical_data for the *_cd models
+   RUN_CANADA, RUN_HN1, RUN_CMC = True, True, False
+   ```
+2. In `RUNS`, uncomment the entries under `Exact Reproducibility` and comment out the others.
+3. Run:
+   ```bash
+   python scripts/inference/predict_original_weights.py
+   ```
+4. Compare `RESULTS_DIR/summary.txt` with our outputs in `results/exact_reproducibility/inference/` and the ROC curves in `results/exact_reproducibility/plots/`. The AUCs should be within ±0.01 of the original values.
+
+### 6.2 Statistical reproducibility (retraining with random seeds)
+
+1. Keep the default `DATA` paths: `canada` for training/validation and `maastro` for testing.
+2. Choose `MODEL`, `CLINICAL_VARIABLES` and `DATA_SPLIT` (see the table above).
+3. Run one outcome, for example LRF:
+   ```bash
+   python scripts/training/training_lrf.py
+   ```
+   `training_lrf*.py` and `training_os*.py` automatically launch **one process per seed** in `SEEDS = [11, 22, 33]`, each with `THREADS` CPU threads. Each seed writes to:
+   ```
+   results/statistical_reproducibility/seeds/seed_<SEED>/logs/
+   results/statistical_reproducibility/seeds/seed_<SEED>/models/
+   seed_<SEED>.out                  # console output of that seed
+   ```
+4. To use the **original authors' seed**, take the values for the outcome, model and split from `data/seeds.xlsx`. Put them in the commented `random.seed(...)`, `random_seed_split` and `torch.manual_seed(...)` lines of the seed block, and comment out the `SEED`-based lines. The DM scripts already use the original seeds (`random.seed(7651962)`, `torch.manual_seed(775135)` for imaging DM).
+5. Run inference on the saved models with `predict_original_weights.py`. Set `WEIGHTS_DIR` to the seed's `models/` folder and use the `Statistical Reproducibility` run list.
+6. Compare your results with ours in `results/statistical_reproducibility/` (`cv_reports/`, `inference_seed_11/`, `plots_seed_11/`, `seeds/*/logs/`).
+
+**Expected cost:** about 17–19 h per outcome for 5-fold CV on our hardware, and about 7 GB peak memory.
+
+> Because of non-determinism in training (data shuffling, dropout on different CPU architectures, etc.), the retrained AUCs will **not** be bit-identical to ours. In the study we used a tolerance of **|ΔAUC| ≤ 0.03**.
+
+### 6.3 External validation (HNC-RADIOMICS)
+
+1. In the training script, point the **`TESTING`** entry to the external cohort:
+   ```python
+   TESTING: {
+       CLINICAL_DATA_PATH: "data/pre-processed/anonymized_cmc.csv",
+       SCANS_PATH: "data/pre-processed/anonymized_cmc_png",
+   }
+   ```
+2. Use the DM or LRF scripts (OS was not evaluated because no patient had reached 4-year follow-up). Point `LOGS_PATH` and `MODEL_PATH` to `results/external_validation/...`.
+3. Data augmentation: random horizontal and vertical flips (p = 0.5), random 90° rotations, random rotation of 0–20°, and horizontal/vertical shifts of 3%.
+4. Run inference with `predict_original_weights.py`, setting `RUN_CMC = True`, `WEIGHTS_DIR = "results/external_validation/models"` and `RESULTS_DIR = "results/external_validation/inference"`.
+5. Compare with `results/external_validation/` (`logs/`, `inference/`, `plots/`, `cv_reports/`).
+
+### 6.4 Pre-processing your own DICOM data
+
+You only need this step to apply the models to a **new cohort**. The PNGs for all three cohorts are already provided. The pipeline is:
+
+| # | Step | Script / notebook |
+|---|---|---|
+| 1 | Check RTSTRUCT names and select the GTV | `notebooks/data_preparation/check_RTstructure_name.ipynb` |
+| 2 | Convert CT DICOM and RTSTRUCT to NIfTI (`dcmrtstruct2nii`) | `scripts/preprocessing/convert_dicom.py`, `notebooks/data_preparation/convert_dicom_to_nifti.ipynb` |
+| 3 | Resample to uniform pixel spacing and calibrate HU | `notebooks/preprocessing/calculate_HU_value.ipynb` |
+| 4 | Reorient to MNI152 with FSL and apply the GTV mask | `scripts/preprocessing/fsl_reorient_final.sh`, `run_fsl_docker.py`, `apply_mask_to_nifti.py` |
+| 5 | Select the slice with the **largest GTV area** (corrected, see [§9](#9-known-reproducibility-issues-and-fixes)) | `scripts/preprocessing/windowing_cropping.py` |
+| 6 | HU window −50 to 300 HU | ″ |
+| 7 | Gaussian filter, σ = 0.5 | ″ |
+| 8 | Crop to 180×180 px around the tumour centroid | ″ |
+| 9 | Normalise intensity to 0–255 and save as 8-bit PNG | ″, `notebooks/preprocessing/create_final_pngs.ipynb` |
+| 10 | Compute tumour volume/area and build the clinical CSV | `notebooks/data_preparation/calculate_volume_area.ipynb`, `cmc_column_transformed.ipynb`, `notebooks/preprocessing/calculate_LRR_in_Days.ipynb` |
+| — | De-identify DICOM metadata | `notebooks/data_preparation/Dicom_metadata_anonymization.ipynb` |
+
+`windowing_cropping.py` reads its paths from environment variables:
+
+```bash
+SCANS_PATH=/path/to/nifti/scans \
+MASKS_PATH=/path/to/nifti/masks \
+OUTPUT_PATH=/path/to/output_pngs \
+python scripts/preprocessing/windowing_cropping.py
+```
+
+FSL 6.0 must be installed (`scripts/utils/fslinstaller.py`) and `FSLDIR` must be set.
+
+### 6.5 Summaries, AUC/CI and plots
+
+| Task | Tool |
+|---|---|
+| Mean AUC and range / 95% CI over the 5 folds | `notebooks/analysis/Calculate mean AUC_&_CI for k-fold CV results.ipynb` → `results/*/cv_reports/*.txt` |
+| ROC curves from prediction CSVs | `python scripts/analysis/make_plots.py <inference_dir> <output_dir>` |
+| Number of trainable parameters | `notebooks/analysis/calculate_trainable_parameters.ipynb` |
+| Two-year follow-up analysis of HNC-RADIOMICS | `notebooks/analysis/cmc_two_year_analysis.ipynb` |
+| Event rates, median follow-up, ID checks | `data/pre-processed/*.ipynb` |
+
+For cohort-split models, 95% CIs are computed by bootstrap with 1000 resamples. For 5-fold CV, we report the mean AUC with its range across folds.
+
+---
+
+## 7. Configuration reference
+
+**`CONFIGURATIONS` block in the training scripts**
+
+| Key | Meaning |
+|---|---|
+| `MODEL` | `CNN`, `ANN` or `LR` |
+| `DATA_SPLIT` | `COHORT_SPLIT` or `CROSS_VALIDATION` |
+| `FOLDS` | number of CV folds (5) |
+| `TIME_TO_EVENT` | time frame in days: `2*365` for DM/LRF, `4*365` for OS |
+| `EVENT` | `DM`, `LRF` or `OS` |
+| `HYPERPARAMETERS` | overrides of the defaults below |
+| `BATCH_SIZE` | 64 |
+| `LOGS_PATH` | log file (per epoch, train/validation/test AUC) |
+| `CLINICAL_VARIABLES` | `True` to include the 11 clinical features, `[]` for imaging only |
+| `DATA_AUGMENTATION` | `HORIZONTAL_FLIP`, `VERTICAL_FLIP`, `ROTATE_90`, `ROTATION`, ... |
+| `STORE_MODEL` | `MODEL_ID`, `MODEL_PATH`, `THRESHOLD` (minimum validation AUC), `MAX_DIFFERENCE` (maximum train–validation AUC gap) |
+
+**Default hyperparameters (same for ANN and CNN)**
+
+| Parameter | Value |
+|---|---|
+| Optimiser | SGD, learning rate 0.05, momentum 0.9 |
+| Weight decay (L2) | 1 × 10⁻⁴ |
+| Activation | Leaky ReLU (slope 0.01) |
+| Dropout (CNN FC layers) | 0.3 / 0.2 / 0.1 |
+| Class weights | `[0.7, 3.7]` (non-event, event) |
+| Model selection | epoch with the highest validation AUC whose train–validation AUC gap is below a threshold (starting at 0.05 and relaxed gradually) |
+
+**Clinical features** (`hn_cnn/parse_data.py`):
 ```python
-DATA = {
-    TRAIN: {
-        CLINICAL_DATA_PATH: "data/canada.csv",
-        SCANS_PATH: "data/pre-processed/canada/",
-    },
-    VALIDATION: {
-        CLINICAL_DATA_PATH: "data/canada.csv",
-        SCANS_PATH: "data/pre-processed/canada/",
-    },
-    TESTING: {
-        CLINICAL_DATA_PATH: "data/maastro.csv",
-        SCANS_PATH: "data/pre-processed/maastro/",   
-    }
+features = tabular[["n0", "n1", "n2", "t1", "t2", "t3", "t4", "vol0", "vol1", "vol2", "vol3"]]
+```
+T-stage has 4 categories, N-stage has 3 (N2 includes N3), and volume has 4 quartile bins: 0–11, 11–24, 24–43 and > 43 × 10³ mm³. If you change this list, also change the input size in `hn_cnn/cnn.py`.
+
+---
+
+## 8. Models
+
+| Model | Input | Architecture |
+|---|---|---|
+| **ANN** | 11 clinical features | 11 → 8 → 4 → 1 (fully connected, sigmoid output) |
+| **CNN** | 180×180 grayscale PNG | 3 conv blocks (8/16/32 filters; conv + max-pool + Leaky ReLU) → 4×4×32 = 512 features → FC 512→128→64→32 (dropout) → 1 (sigmoid) |
+| **CNN + clinical** | PNG + 11 clinical features | CNN as above; the 11 clinical features are concatenated with the 32 image features before the output neuron |
+
+---
+
+## 9. Known reproducibility issues and fixes
+
+We document every change needed to run the original code. The architecture, hyperparameters and methodology were **not** changed. The full list of barriers, resolutions and time needed is in Table 6 of the manuscript.
+
+- **Slice-selection bug (pre-processing).** The original algorithm chose the slice with the largest *total* mask pixel count. On HNC-RADIOMICS this often picked slices without tumour. Our two-pass fix in `scripts/preprocessing/windowing_cropping.py` first finds the slices that contain tumour, then picks the one with the largest GTV area. With the fix, the selected slice contained tumour in **100%** of HNC-RADIOMICS patients, compared with **60%** for the original code.
+- **HU windowing check.** The −50 to 300 HU window captured 97.3% of tumour pixels in HNC-RADIOMICS. See `pre-processing_analysis_outputs/`.
+- **Hardware-dependent randomness.** `torch.nn.Dropout` can give different masks on x86-64 and ARM CPUs even with identical seeds. Setting `torch.backends.cudnn.deterministic = True`, `torch.set_num_threads(1)` or forcing the CPU did **not** fix this. Example:
+  ```python
+  random.seed(7651962); torch.manual_seed(775135)
+  data = torch.randn(4, 4)
+  torch.nn.Dropout(p=0.3)(data)   # different zeroed entries on x86-64 vs ARM
+  ```
+  A deterministic alternative:
+  ```python
+  mask = torch.distributions.Bernoulli(probs=(1 - p)).sample(x.size())
+  out = x * mask / (1 - p)
+  ```
+- **Missing weights.** Weights were released for only 6 of the 18 original models. The remaining 12 could only be assessed by retraining (statistical reproducibility).
+- **Earlier script versions.** These are kept in `scripts/training/variants/` and the unmodified original scripts in `scripts/training/original_examples/`, so the changes can be traced.
+
+---
+
+## 10. Reporting guideline assessment
+
+Two raters independently scored each item of **CLAIM** and **TRIPOD+AI**, using the original paper and code repository, then reached consensus. Each item was scored as reported, partially reported, not reported or not applicable.
+
+<p align="center">
+  <img src="figures/dual-framework_compliance_assessment.png" alt="CLAIM and TRIPOD+AI compliance assessment" width="750">
+</p>
+
+The checklists are in [`docs/TRIPOD-AI_checklist/`](docs/TRIPOD-AI_checklist/). The item-level evidence is in Supplementary Table S1 of the manuscript.
+
+---
+
+## 11. Citation
+
+If you use this repository, please cite our study:
+
+```bibtex
+@article{shaikh_hnc_reproducibility,
+  title   = {Independent reproduction and external validation of image-based deep learning prognostic models for head and neck cancer},
+  author  = {Shaikh, Hasan and A, Sathya and C, Praveenraj and S, Balu Krishna and Irodi, Aparna and Kuchipudi, Rajendra Benny and Victor, Jino Wilson and Mathew, Manu and Isiah, Rajesh and Pavamani, Simon Pradeep and Mammen, Joy John and Thomas, Hannah Mary T},
+  note    = {Manuscript under review},
+  url     = {https://github.com/qirail/reproducibility-hnc-cnn}
 }
 ```
 
-### Model Architectures
-
-Three model types are available:
-
-1. **ANN (Clinical Only)** - Artificial Neural Network using only clinical variables
-   - Input: 11 clinical features (T-stage, N-stage, tumor volume - one-hot encoded)
-   - Architecture: 4 fully connected layers
-
-2. **CNN (Imaging Only)** - Convolutional Neural Network using only CT images
-   - Input: 180×180 pixel cropped CT images
-   - Architecture: 3 convolutional blocks + 4 fully connected layers
-
-3. **CNN + Clinical** - Combined model using both imaging and clinical data
-   - Input: CT images + 11 clinical features
-   - Architecture: CNN feature extraction + clinical data fusion
-
-### Validation Strategies
-
-**Cohort Split Approach:**
-- Training: HN-PET-CT (2 Canadian centers)
-- Validation: HN-PET-CT (2 Canadian centers)
-- External Test: HN1-RADIOMICS (1 Dutch dataset, (MAASTRO))
-
-**5-Fold Cross-Validation:**
-- Stratified k-fold on the full HN-PET-CT (Canadian dataset)
-- External Test: HN1-RADIOMICS (Dutch dataset, (MAASTRO))
-
-### Training Scripts
-
-Training scripts follow this naming convention:
-- `training_{outcome}.py` = 5-fold cross-validation, **imaging only**
-- `training_{outcome}_cd.py` = Cohort split, **imaging + clinical data**
-
-where `{outcome}` is:
-- `dm` - Distant Metastasis (2-year)
-- `lrf` - Locoregional Failure (2-year)  
-- `os` - Overall Survival (4-year)
-
-**Examples:**
-
-```bash
-# Distant Metastasis
-python scripts/training/training_dm.py       # imaging only
-python scripts/training/training_dm_cd.py    # imaging + clinical
-
-# Locoregional Failure
-python scripts/training/training_lrf.py      # imaging only
-python scripts/training/training_lrf_cd.py   # imaging + clinical
-
-# Overall Survival
-python scripts/training/training_os.py       # imaging only
-python scripts/training/training_os_cd.py    # imaging + clinical
-```
-
-**Training time:** ~17-19 hours per outcome (5-fold CV), ~7GB peak memory usage
-
----
-
-### Data Split
-
-In this work, we followed the same data split as previous studies. In this strategy, two cohorts are used for training, two for validation, and one exclusively for external validation. To train the model following this method, configure the `DATA_SPLIT` parameter with `COHORT_SPLIT`.
-
-The cohort for training and validation is part of the [Head-Neck-PET-CT dataset](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00).
-
-The dataset [HEAD-NECK-RADIOMICS-HN1](https://doi.org/10.7937/tcia.2019.8kap372n) from Maastro was used exclusively for external validation.
-
-Additionally, we evaluated the uncertainty of the model with a 5-fold cross-validation strategy. To train the model following this method, configure the `DATA_SPLIT` parameter with `CROSS_VALIDATION`.
-
-### Training
-
-The current implementation allows training and evaluating 3 different models:
-- A convolutional neural network (set the `Model` parameter in the configuration to `CNN`)
-- An artificial neural network (set the `Model` parameter in the configuration to `ANN`)
-- A logistic regression (set the `Model` parameter in the configuration to `LR`)
-
-These models can be evaluated by splitting the data following the `COHORT_SPLIT` or cross-validation (check the previous section).
-
-The additional parameters available are described below:
-- `FOLDS`: Number of folds to use when performing cross-validation
-- `TIME_TO_EVENT`: The minimum observation period for a non-event to be included in the training
-- `EVENT`: Event that the network will predict (`DM` - Distant Metastasis, `LRF` - Local-Regional Failure, `OS` - Survival)
-- `HYPERPARAMETERS`: Set of hyperparameters to change from the default ones (check below)
-- `BATCH_SIZE`: the batch size
-- `LOGS_PATH`: Path to store the logs and metrics
-- `CLINICAL_VARIABLES`: State the clinical variables that will be included when training the model
-- `DATA_AUGMENTATION`: Data augmentation techniques to apply
-
-Regarding the hyperparameters employed:
-- `LEARNING_RATE`: the learning rate (default: 0.05)
-- `EPOCHS`: number of epochs
-- `MOMENTUM`: momentum
-- `DAMPENING`: dampening (default: 0.00)
-- `RELU_SLOPE`: slope for the RELU function (default: 0.10)
-- `WEIGHTS_DECAY`: weight decay (L2 penalty) (default: 0.0001)
-- `OPTIMIZER`: optimizer used, default: SGD - https://pytorch.org/docs/stable/generated/torch.optim.SGD.html
-- `CLASS_WEIGHTS`: weights for each class in the loss function (default: [0.7, 3.7])
-
-Regarding the data augmentation techniques:
-- `HORIZONTAL_FLIP`: by default, a probability of 0.5
-- `VERTICAL_FLIP`: by default, a probability of 0.5
-- `ROTATE_90`: randomly rotate the image 90 degrees 1-3 times, by default, with a probability of 0.75
-- `ROTATION`: randomly rotate the image a certain number of degrees, by default, a maximum of 10 degrees
-
-To store the model, include the following parameters:
-- `MODEL_ID`: will be used for the file name in combination with the epoch number
-- `MODEL_PATH`: the path for the folder to store the models
-- `THRESHOLD`: (optional) Stores the model if the AUC for the validation set is above this value
-- `MAX_DIFFERENCE`: (optional) Stores the model if the difference between the training and validation AUC is below this value
-
-### Clinical Data
-
-The clinical variables currently considered can be checked in the file `hn_cnn/parse_data.py`.
-The dictionary `CLINICAL_DATA` identifies the necessary variables and the values used across the different datasets.
-This information is used to harmonize the datasets before training the network.
-
-The clinical information considered: primary site, T-stage, N-stage, TNM-stage, HPV (human papillomavirus) status, volume, and area of the tumour.
-
-Currently, the clinical variables included in the model (when setting `CLINICAL_VARIABLES` to `True`) are pre-set in the file `hn_cnn/parse_data.py`:
-```python
-features = tabular[["n0", "n1", "n2", "t1", "t2", "t3", "t4", "vol0", "vol1", "vol2", "vol3"]]
-``` 
-
-If you change this set, make sure to also modify the number of neurons in the network accordingly (file `hn_cnn/cnn.py`).
-
----
-
-## Reproducibility
-
-The training scripts allow setting up the necessary seeds to make results fully reproducible:
-- Random seed for Python (`random.seed()`)
-- Random seed for data split, necessary when performing cross-validation (`StratifiedKFold`)
-- Random seed for PyTorch library (`torch.manual_seed()`)
-
-When reproducing the results from our manuscript, seeds are provided in `data/seeds.xlsx`. Include the following in your training script:
-
-```python
-import random
-import torch
-
-random.seed(seed_value)  # From seeds.xlsx
-random_seed_split = random.randint(0, 9174937)
-torch.manual_seed(seed_value)  # From seeds.xlsx
-```
-
-The scripts in `scripts/training/` already include all necessary configurations to reproduce our results for each outcome.
-
-### Hardware-Dependent Numerical Variations
-
-We trained our models on **Ubuntu 24.04 LTS** with **NVIDIA Quadro RTX 5000 GPUs** at Christian Medical College, Vellore. Although we provide seeds and scripts for reproduction, inconsistencies may occur on different hardware architectures.
-
-We observed that some systems produce different results when executing the `torch.nn.Dropout` function, even with identical seeds. From experiments across different machines, we believe this is caused by CPU architecture differences:
-
-```python
-import random
-import torch
-
-random.seed(7651962)
-random_seed_split = random.randint(0, 9174937)
-torch.manual_seed(775135)
-
-# Consistent across architectures:
-data = torch.randn(4, 4)
-
-# Architecture-dependent results:
-dp1 = torch.nn.Dropout(p=0.3)
-dp1(data)
-
-# x86-64 architecture (our system):
-# tensor([[-1.0361, -0.0000, -0.0000,  1.8477],
-#         [-2.0117, -1.2687, -0.0785,  0.0000],
-#         [-0.0000, -2.3690, -0.0955, -0.0000],
-#         [-0.4844,  1.5011,  1.8367,  2.3154]])
-
-# vs ARM architecture:
-# tensor([[-1.0361, -3.5810, -1.1379,  1.8477],
-#         [-0.0000, -1.2687, -0.0000,  1.7217],
-#         [-1.4952, -2.3690, -0.0955, -0.0000],
-#         [-0.4844,  1.5011,  1.8367,  2.3154]])
-```
-
-Setting the following configurations did **not** resolve the architecture-dependent behavior:
-
-```python
-device = torch.device("cpu")
-torch.backends.cudnn.deterministic = True
-torch.set_num_threads(1)
-```
-
-**Alternative:** To avoid this issue entirely, you can implement a deterministic dropout:
-
-```python
-x = torch.ones(10, 20)
-p = 0.5
-mask = torch.distributions.Bernoulli(probs=(1-p)).sample(x.size())
-x[~mask.bool()] = x.mean()
-out = x * mask * 1/(1-p)
-```
-
-### Datasets Used
-
-**Original Study (Exact Reproduction):**
-- Training set: [HGJ and CHUS](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00) - Canadian Head-Neck-PET-CT dataset
-- Validation set: [HMR and CHUM](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00) - Canadian Head-Neck-PET-CT dataset
-- External test set: [MAASTRO](https://doi.org/10.7937/tcia.2019.8kap372n) - Dutch HEAD-NECK-RADIOMICS-HN1 dataset
-
-**Conceptual Reproducibility (Our External Validation):**
-- External validation set: CMC Vellore, India (n=102) - Private dataset, available on reasonable request but available as PNG format under `data/pre-processed/anonymized_cmc_png`
-
----
-
-## Citation
-
-If you use this code or findings in your research, please cite:
-
-```bibtex
-[Our paper citation - to be added after publication]
-```
-
-**And the original study:**
+and the original study:
 
 ```bibtex
 @article{mateus2023image,
-  title={Image based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization},
-  author={Mateus, Pedro and Volmer, Leroy and Wee, Leonard and Aerts, Hugo JWL and Hoebers, Frank and Dekker, Andre and Bermejo, Inigo},
-  journal={Scientific Reports},
-  volume={13},
-  number={1},
-  pages={18176},
-  year={2023},
-  publisher={Nature Publishing Group UK London},
-  doi={10.1038/s41598-023-45486-5}
+  title     = {Image based prognosis in head and neck cancer using convolutional neural networks: a case study in reproducibility and optimization},
+  author    = {Mateus, Pedro and Volmer, Leroy and Wee, Leonard and Aerts, Hugo JWL and Hoebers, Frank and Dekker, Andre and Bermejo, Inigo},
+  journal   = {Scientific Reports},
+  volume    = {13},
+  number    = {1},
+  pages     = {18176},
+  year      = {2023},
+  doi       = {10.1038/s41598-023-45486-5}
 }
 ```
 
----
-
-## Acknowledgments
-
-- **Original study authors** (Mateus et al.) for sharing code and providing clarifications during reproduction
-- **The Cancer Imaging Archive (TCIA)** for providing public datasets
+Please also cite the TCIA datasets: Vallières *et al.*, Head-Neck-PET-CT (2017), and Wee & Dekker, HEAD-NECK-RADIOMICS-HN1 (2019).
 
 ---
 
-## License
+## 12. Acknowledgements, funding, license and contact
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+- **Original authors** (Mateus *et al.*), for releasing their code, data and weights, and for answering our questions during the reproduction.
+- **The Cancer Imaging Archive (TCIA)**, for the public datasets.
+- **Funding:** DBT-Wellcome Trust India Alliance Early Career Fellowship (IA/E/18/1/504306), awarded to H.M.T.T.
+- **License:** MIT (see [LICENSE](LICENSE)). The data in `data/` are subject to the terms of their original sources.
 
----
-
-## Contact
-
-- **Hasan Shaikh** - [GitHub](https://github.com/hash123shaikh)
-- **Dr. Hannah Mary Thomas T** - hannah.thomas@cmcvellore.ac.in
-- **Institution:** Quantitative Imaging Research and Artificial Intelligence Lab (QIRAIL), Christian Medical College, Vellore, Tamil Nadu, India
-
----
-
-**Note:** This is a reproducibility study. For the original implementation, see the [original repository](https://github.com/MaastrichtU-CDS/hn_cnn).
+**Contact**
+- Hasan Shaikh: [GitHub @hash123shaikh](https://github.com/hash123shaikh)
+- Dr. Hannah Mary T. Thomas (corresponding author): hannah.thomas@cmcvellore.ac.in
+- Quantitative Imaging Research and Artificial Intelligence Lab (QIRAIL), Department of Radiation Oncology Unit 2, Christian Medical College Vellore, Tamil Nadu 632004, India

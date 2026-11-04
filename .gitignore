@@ -1,16 +1,20 @@
+# Large / private data folders - excluded from repo
+anonymized_study/
+FOLLOW-UP_PATIENTS_FOR_2_YEARS_LRR__&__NON-LRR/
+convert_nifti_format/
+cmc_final_png/
+example/
+data/pre-processed/cmc_c/
+data/pre-processed/cmc.csv
 
-# Large data folders - excluded from repo
-anonymized_study/
-FOLLOW-UP_PATIENTS_FOR_2_YEARS_LRR__&__NON-LRR/
-convert_nifti_format/
-cmc_final_png/
-example/
-data/pre-processed/cmc_c/
-# Large data folders - excluded from repo
-anonymized_study/
-FOLLOW-UP_PATIENTS_FOR_2_YEARS_LRR__&__NON-LRR/
-convert_nifti_format/
-cmc_final_png/
-example/
-hnc_cnn_env
-data/pre-processed/cmc_c/
+# Local environments
+hnc_cnn_env/
+.venv/
+venv/
+
+# Python / editor artefacts
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.vscode/
+.idea/
