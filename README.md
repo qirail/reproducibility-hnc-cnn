@@ -28,9 +28,8 @@ The goal of this repository is that **anyone can repeat every step of our study*
 7. [Configuration reference](#7-configuration-reference)
 8. [Models](#8-models)
 9. [Known reproducibility issues and fixes](#9-known-reproducibility-issues-and-fixes)
-10. [Reporting guideline assessment](#10-reporting-guideline-assessment)
-11. [Citation](#11-citation)
-12. [Acknowledgements, funding, license and contact](#12-acknowledgements-funding-license-and-contact)
+10. [Citation](#10-citation)
+11. [Acknowledgements, funding, license and contact](#11-acknowledgements-funding-license-and-contact)
 
 ---
 
@@ -169,7 +168,7 @@ Key pinned versions: `torch==1.13.1`, `torchvision==0.14.1`, `numpy==1.22.0`, `p
 |---|---|---|---|---|
 | **HN-PET-CT** (4 Canadian centres: HGJ, CHUS, HMR, CHUM) | [TCIA, doi:10.7937/K9/TCIA.2017.8oje5q00](https://doi.org/10.7937/K9/TCIA.2017.8oje5q00) | 298 | Training / validation | `data/pre-processed/canada.csv`, `canada_c/` |
 | **HN1** (MAASTRO, Netherlands) | [TCIA, doi:10.7937/tcia.2019.8kap372n](https://doi.org/10.7937/tcia.2019.8kap372n) | 137 | External test (original study) | `data/pre-processed/maastro.csv`, `maastro_c/` |
-| **HNC-RADIOMICS** (CMC Vellore, India) | Private, prospectively recruited 2021–2025, IRB no. 11689 | see CSV | External validation (this study) | `data/pre-processed/anonymized_cmc.csv`, `anonymized_cmc_png/` |
+| **HNC-RADIOMICS** (CMC Vellore, India) | Private, prospectively recruited 2021–2025 | see CSV | External validation (this study) | `data/pre-processed/anonymized_cmc.csv`, `anonymized_cmc_png/` |
 
 - **Images:** one 180×180, 8-bit PNG per patient, showing the CT slice with the largest GTV area after pre-processing.
 - **Clinical CSVs:** contain the features used by the models (T-stage, N-stage and tumour volume, one-hot encoded inside `hn_cnn/parse_data.py`) plus event indicators and times in days.
@@ -374,19 +373,7 @@ We document every change needed to run the original code. The architecture, hype
 
 ---
 
-## 10. Reporting guideline assessment
-
-Two raters independently scored each item of **CLAIM** and **TRIPOD+AI**, using the original paper and code repository, then reached consensus. Each item was scored as reported, partially reported, not reported or not applicable.
-
-<p align="center">
-  <img src="figures/dual-framework_compliance_assessment.png" alt="CLAIM and TRIPOD+AI compliance assessment" width="750">
-</p>
-
-The checklists are in [`docs/TRIPOD-AI_checklist/`](docs/TRIPOD-AI_checklist/). The item-level evidence is in Supplementary Table S1 of the manuscript.
-
----
-
-## 11. Citation
+## 10. Citation
 
 If you use this repository, please cite our study:
 
@@ -418,11 +405,11 @@ Please also cite the TCIA datasets: Vallières *et al.*, Head-Neck-PET-CT (2017)
 
 ---
 
-## 12. Acknowledgements, funding, license and contact
+## 11. Acknowledgements, funding, license and contact
 
 - **Original authors** (Mateus *et al.*), for releasing their code, data and weights, and for answering our questions during the reproduction.
 - **The Cancer Imaging Archive (TCIA)**, for the public datasets.
-- **Funding:** DBT-Wellcome Trust India Alliance Early Career Fellowship (IA/E/18/1/504306), awarded to H.M.T.T.
+- **Funding:** DBT-Wellcome Trust India Alliance Early Career Fellowship, awarded to H.M.T.T.
 - **License:** MIT (see [LICENSE](LICENSE)). The data in `data/` are subject to the terms of their original sources.
 
 **Contact**
