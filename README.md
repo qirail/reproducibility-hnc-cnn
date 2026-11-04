@@ -28,6 +28,7 @@ The goal of this repository is that **anyone can repeat every step of our study*
 7. [Configuration reference](#7-configuration-reference)
 8. [Models](#8-models)
 9. [Known reproducibility issues and fixes](#9-known-reproducibility-issues-and-fixes)
+   - [9.1 Machine (CPU-architecture) variability](#91-machine-cpu-architecture-variability-reported-by-mateus-et-al)
 10. [Citation](#10-citation)
 11. [Acknowledgements, funding, license and contact](#11-acknowledgements-funding-license-and-contact)
 
@@ -247,7 +248,7 @@ The six models released by Mateus et al. are stored in `results/models/original_
 
 **Expected cost:** about 17–19 h per outcome for 5-fold CV on our hardware, and about 7 GB peak memory.
 
-> Because of non-determinism in training (data shuffling, dropout on different CPU architectures, etc.), the retrained AUCs will **not** be bit-identical to ours. In the study we used a tolerance of **|ΔAUC| ≤ 0.03**.
+> Because of non-determinism in training (data shuffling, and dropout behaving differently on ARM and x86 CPUs; see [§9.1](#91-machine-cpu-architecture-variability-reported-by-mateus-et-al)), the retrained AUCs will **not** be bit-identical to ours. In the study we used a tolerance of **|ΔAUC| ≤ 0.03**.
 
 ### 6.3 External validation (HNC-RADIOMICS)
 
@@ -359,19 +360,59 @@ We document every change needed to run the original code. The architecture, hype
 
 - **Slice-selection bug (pre-processing).** The original algorithm chose the slice with the largest *total* mask pixel count. On HNC-RADIOMICS this often picked slices without tumour. Our two-pass fix in `scripts/preprocessing/windowing_cropping.py` first finds the slices that contain tumour, then picks the one with the largest GTV area. With the fix, the selected slice contained tumour in **100%** of HNC-RADIOMICS patients, compared with **60%** for the original code.
 - **HU windowing check.** The −50 to 300 HU window captured 97.3% of tumour pixels in HNC-RADIOMICS. See `pre-processing_analysis_outputs/`.
-- **Hardware-dependent randomness.** `torch.nn.Dropout` can give different masks on x86-64 and ARM CPUs even with identical seeds. Setting `torch.backends.cudnn.deterministic = True`, `torch.set_num_threads(1)` or forcing the CPU did **not** fix this. Example:
-  ```python
-  random.seed(7651962); torch.manual_seed(775135)
-  data = torch.randn(4, 4)
-  torch.nn.Dropout(p=0.3)(data)   # different zeroed entries on x86-64 vs ARM
-  ```
-  A deterministic alternative:
-  ```python
-  mask = torch.distributions.Bernoulli(probs=(1 - p)).sample(x.size())
-  out = x * mask / (1 - p)
-  ```
+- **Machine (CPU-architecture) variability.** This is a known caveat reported by the original authors. See [§9.1](#91-machine-cpu-architecture-variability-reported-by-mateus-et-al).
 - **Missing weights.** Weights were released for only 6 of the 18 original models. The remaining 12 could only be assessed by retraining (statistical reproducibility).
 - **Earlier script versions.** These are kept in `scripts/training/variants/` and the unmodified original scripts in `scripts/training/original_examples/`, so the changes can be traced.
+
+### 9.1 Machine (CPU-architecture) variability, reported by Mateus et al.
+
+Mateus et al. trained their models on [DSRI](https://dsri.maastrichtuniversity.nl), an OpenShift server cluster. Their [repository](https://github.com/MaastrichtU-CDS/hn_cnn) reports that, **even with identical seeds, `torch.nn.Dropout` behaves differently on different CPU architectures**. They attribute this to the CPU architecture and state that **an ARM CPU** is needed to obtain *their exact* results. They tested this on AWS with an Ubuntu 24.04 LTS image and a `t4g.micro` 64-bit ARM CPU.
+
+Their example (same seeds; `torch.randn` agrees across machines, but the dropout mask does not):
+
+```python
+import random, torch
+random.seed(7651962)
+random_seed_split = random.randint(0, 9174937)
+torch.manual_seed(775135)
+
+data = torch.randn(4, 4)            # identical on all machines
+torch.nn.Dropout(p=0.3)(data)       # differs between machines
+
+# ARM (DSRI / AWS t4g), as used for the original results:
+# tensor([[-1.0361, -3.5810, -1.1379,  1.8477],
+#         [-0.0000, -1.2687, -0.0000,  1.7217],
+#         [-1.4952, -2.3690, -0.0955, -0.0000],
+#         [-0.4844,  1.5011,  1.8367,  2.3154]])
+# x86:
+# tensor([[-1.0361, -0.0000, -0.0000,  1.8477],
+#         [-2.0117, -1.2687, -0.0785,  0.0000],
+#         [-0.0000, -2.3690, -0.0955, -0.0000],
+#         [-0.4844,  1.5011,  1.8367,  2.3154]])
+```
+
+According to the original authors, the following settings did **not** remove the difference:
+
+```python
+device = torch.device("cpu")
+torch.backends.cudnn.deterministic = True
+torch.set_num_threads(1)
+```
+
+As a possible future fix, they suggest a custom dropout implementation:
+
+```python
+mask = torch.distributions.Bernoulli(probs=(1 - p)).sample(x.size())
+x[~mask.bool()] = x.mean()
+out = x * mask * 1 / (1 - p)
+```
+
+**How this relates to our study**
+
+- All our experiments ran on an **x86-64** workstation (Ubuntu 24.04 LTS, NVIDIA Quadro RTX 5000), not on ARM.
+- **Exact reproducibility is not affected.** When saved weights are evaluated, the model is in `eval()` mode and dropout is switched off. This is consistent with our reproduced AUCs being within 0.01 of the originals.
+- **Statistical reproducibility (retraining) is affected.** Dropout is active during training, so the same seed can produce a different model on a different CPU architecture. This is one possible contributor to the differences we observed after retraining, together with seed-to-seed variability. That is why we report results over 4 seeds and use a tolerance of |ΔAUC| ≤ 0.03.
+- **For new users:** if you need bit-identical retraining of the *original* models, use an ARM CPU as Mateus et al. recommend. If you retrain on x86, expect your results to differ from the original values, and possibly from ours as well.
 
 ---
 
